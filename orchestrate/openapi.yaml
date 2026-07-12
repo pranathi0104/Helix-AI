@@ -4,7 +4,7 @@ info:
   description: Secure read-only API for IBM watsonx Orchestrate agents to retrieve patient health context from Helix AI.
   version: 1.0.0
 servers:
-  - url: https://creativity-render-intervention-planet.trycloudflare.com/api/v1/orchestrate
+  - url: https://helix-ai-qjc9.onrender.com/api/v1/orchestrate
     description:  Helix AI secure Orchestrate API
 
 security:
