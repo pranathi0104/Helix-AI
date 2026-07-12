@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Vitals History{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+  <a href="{{ url_for('monitoring.index') }}">Chronic Disease Monitoring</a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">History</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <div class="card-icon card-icon-lg bg-helix-blue-light">
+      <i class="bi bi-clock-history text-helix-blue" style="font-size:1.3rem;"></i>
+    </div>
+    <div>
+      <h1 class="page-title mb-0">Vitals History</h1>
+      <p class="page-subtitle mb-0">All your recorded readings, newest first.</p>
+    </div>
+  </div>
+  <div class="page-header-actions">
+    <a href="{{ url_for('monitoring.add') }}" class="btn btn-helix-primary">
+      <i class="bi bi-plus-lg me-2"></i>Log New Reading
+    </a>
+  </div>
+</div>
+
+{% if classified %}
+
+{# ── Search filter (client-side) ─────────────────────────────────────────── #}
+<div class="mb-3">
+  <div class="input-group" style="max-width:360px;">
+    <span class="input-group-text bg-light">
+      <i class="bi bi-search text-muted"></i>
+    </span>
+    <input type="text" id="history-search" class="form-control"
+           placeholder="Search date or status…" />
+  </div>
+</div>
+
+{# ── History table ────────────────────────────────────────────────────────── #}
+<div class="card helix-card mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover history-table mb-0" id="history-table">
+      <thead>
+        <tr>
+          <th>Date &amp; Time</th>
+          <th>BP (mmHg)</th>
+          <th>Sugar (mg/dL)</th>
+          <th>HR (bpm)</th>
+          <th>SpO₂ (%)</th>
+          <th>Temp (°C)</th>
+          <th>Weight (kg)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record, status in classified %}
+        <tr>
+          <td class="text-nowrap">
+            <strong>{{ record.date_time | format_ist('%d %b %Y') }}</strong><br>
+            <small class="text-muted">{{ record.date_time | format_ist('%H:%M') }}</small>
+          </td>
+
+          {# Blood Pressure #}
+          <td>
+            {% if record.systolic_bp %}
+              {{ record.systolic_bp }}/{{ record.diastolic_bp }}
+              <br><span class="badge bg-{{ status.blood_pressure.css }} history-badge">{{ status.blood_pressure.label }}</span>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+
+          {# Blood Sugar #}
+          <td>
+            {% if record.blood_sugar %}
+              {{ record.blood_sugar }}
+              <br><span class="badge bg-{{ status.blood_sugar.css }} history-badge">{{ status.blood_sugar.label }}</span>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+
+          {# Heart Rate #}
+          <td>
+            {% if record.heart_rate %}
+              {{ record.heart_rate }}
+              <br><span class="badge bg-{{ status.heart_rate.css }} history-badge">{{ status.heart_rate.label }}</span>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+
+          {# SpO₂ #}
+          <td>
+            {% if record.spo2 %}
+              {{ record.spo2 }}
+              <br><span class="badge bg-{{ status.spo2.css }} history-badge">{{ status.spo2.label }}</span>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+
+          {# Temperature #}
+          <td>
+            {% if record.body_temperature %}
+              {{ record.body_temperature }}
+              <br><span class="badge bg-{{ status.temperature.css }} history-badge">{{ status.temperature.label }}</span>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+
+          {# Weight #}
+          <td>
+            {% if record.weight %}{{ record.weight }}
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+
+          {# Overall status #}
+          <td>
+            {% if status.has_alert %}
+              <span class="badge bg-danger">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>Alert
+              </span>
+            {% else %}
+              <span class="badge bg-success">
+                <i class="bi bi-check-circle-fill me-1"></i>Normal
+              </span>
+            {% endif %}
+            {% if record.notes %}
+              <span class="ms-1 text-muted" title="{{ record.notes }}">
+                <i class="bi bi-chat-left-text"></i>
+              </span>
+            {% endif %}
+          </td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# ── Pagination ───────────────────────────────────────────────────────────── #}
+{% if pagination.pages > 1 %}
+<nav aria-label="Vitals history pagination">
+  <ul class="pagination pagination-sm">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('monitoring.history', page=pagination.prev_num) }}">
+        &laquo; Prev
+      </a>
+    </li>
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('monitoring.history', page=p) }}">{{ p }}</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('monitoring.history', page=pagination.next_num) }}">
+        Next &raquo;
+      </a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="card helix-card">
+  <div class="card-body text-center py-5">
+    <i class="bi bi-clipboard-data" style="font-size:3rem; color:var(--helix-border);"></i>
+    <p class="text-muted mt-3 mb-2">No vitals recorded yet.</p>
+    <a href="{{ url_for('monitoring.add') }}" class="btn btn-helix-primary">
+      <i class="bi bi-plus-lg me-2"></i>Log Your First Reading
+    </a>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Client-side search filter
+  const searchInput = document.getElementById('history-search');
+  const tableBody   = document.querySelector('#history-table tbody');
+
+  if (searchInput && tableBody) {
+    searchInput.addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      tableBody.querySelectorAll('tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  }
+</script>
+{% endblock %}

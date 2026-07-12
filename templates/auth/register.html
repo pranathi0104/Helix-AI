@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block auth_content %}
+<div class="auth-card-container">
+
+  <!-- Brand header -->
+  <div class="auth-brand text-center mb-4">
+    <div class="auth-brand-icon mb-3">
+      <i class="bi bi-heart-pulse-fill"></i>
+    </div>
+    <h1 class="auth-brand-title">Helix AI</h1>
+    <p class="auth-brand-subtitle">Healthcare Companion</p>
+  </div>
+
+  <!-- Register card -->
+  <div class="card helix-card auth-card">
+    <div class="card-body p-4 p-md-5">
+
+      <h2 class="card-title mb-1">Create your account</h2>
+      <p class="text-muted mb-4 small">Join Helix AI and take control of your health</p>
+
+      <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+
+        <!-- Username -->
+        <div class="mb-3">
+          <label for="username" class="form-label fw-medium">Username</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <i class="bi bi-person text-muted"></i>
+            </span>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-control border-start-0 ps-0"
+              placeholder="Choose a username"
+              required
+              autocomplete="username"
+            />
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label for="email" class="form-label fw-medium">Email address</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <i class="bi bi-envelope text-muted"></i>
+            </span>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control border-start-0 ps-0"
+              placeholder="you@example.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label for="password" class="form-label fw-medium">Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <i class="bi bi-lock text-muted"></i>
+            </span>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control border-start-0 ps-0"
+              placeholder="Minimum 8 characters"
+              required
+              autocomplete="new-password"
+              minlength="8"
+            />
+            <button
+              type="button"
+              class="input-group-text bg-light border-start-0 toggle-password"
+              data-target="password"
+              tabindex="-1"
+            >
+              <i class="bi bi-eye text-muted"></i>
+            </button>
+          </div>
+          <!-- Password strength indicator -->
+          <div class="password-strength-bar mt-1 d-none" id="password-strength">
+            <div class="strength-fill" id="strength-fill"></div>
+          </div>
+          <small class="text-muted" id="strength-label"></small>
+        </div>
+
+        <!-- Confirm password -->
+        <div class="mb-4">
+          <label for="confirm_password" class="form-label fw-medium">Confirm password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <i class="bi bi-lock-fill text-muted"></i>
+            </span>
+            <input
+              type="password"
+              id="confirm_password"
+              name="confirm_password"
+              class="form-control border-start-0 ps-0"
+              placeholder="Re-enter your password"
+              required
+              autocomplete="new-password"
+            />
+          </div>
+          <small class="text-danger d-none" id="password-mismatch">Passwords do not match.</small>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-helix-primary w-100 btn-lg">
+          <i class="bi bi-person-plus me-2"></i>Create Account
+        </button>
+
+      </form>
+
+      <hr class="my-4" />
+      <p class="text-center text-muted small mb-0">
+        Already have an account?
+        <a href="{{ url_for('auth.login') }}" class="link-helix fw-medium">Sign in</a>
+      </p>
+
+    </div>
+  </div>
+
+  <p class="text-center text-muted mt-3" style="font-size: 0.78rem; max-width: 360px; margin: 0 auto;">
+    <i class="bi bi-shield-check me-1"></i>
+    Your health data is stored locally and never shared with third parties.
+  </p>
+
+</div>
+{% endblock %}

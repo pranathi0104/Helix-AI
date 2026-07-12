@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Log Vitals{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+  <a href="{{ url_for('monitoring.index') }}">Chronic Disease Monitoring</a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">Log Vitals</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <div class="card-icon card-icon-lg bg-helix-green-light">
+      <i class="bi bi-plus-circle text-helix-green" style="font-size:1.3rem;"></i>
+    </div>
+    <div>
+      <h1 class="page-title mb-0">Log Vitals</h1>
+      <p class="page-subtitle mb-0">Record your vital signs. Fill in whichever measurements you have.</p>
+    </div>
+  </div>
+</div>
+
+{# Render any server-side flash errors #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show mb-3" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>{{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<form method="POST" action="{{ url_for('monitoring.add') }}" novalidate id="vitals-form">
+
+  <div class="row g-4">
+
+    {# ── Date / time ──────────────────────────────────────────────────────── #}
+    <div class="col-12">
+      <div class="card helix-card">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-3">
+            <i class="bi bi-calendar-event me-2 text-helix-blue"></i>Reading Date & Time
+          </h5>
+          <div class="col-12 col-md-4">
+            <label for="date_time" class="form-label fw-medium">Date and Time</label>
+            <input type="datetime-local" id="date_time" name="date_time"
+                   class="form-control"
+                   value="{{ form_data.date_time if form_data else now_str }}"
+                   max="{{ now_str }}" required />
+            <small class="text-muted">Defaults to right now.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Blood Pressure ───────────────────────────────────────────────────── #}
+    <div class="col-12 col-md-6">
+      <div class="card helix-card h-100">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-1">
+            <i class="bi bi-activity me-2 text-danger"></i>Blood Pressure
+          </h5>
+          <p class="text-muted small mb-3">Normal: &lt;120 / &lt;80 mmHg</p>
+          <div class="row g-3">
+            <div class="col-6">
+              <label for="systolic_bp" class="form-label fw-medium">Systolic</label>
+              <div class="input-group">
+                <input type="number" id="systolic_bp" name="systolic_bp"
+                       class="form-control" min="50" max="300" placeholder="e.g. 120"
+                       value="{{ form_data.systolic_bp if form_data else '' }}" />
+                <span class="input-group-text">mmHg</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <label for="diastolic_bp" class="form-label fw-medium">Diastolic</label>
+              <div class="input-group">
+                <input type="number" id="diastolic_bp" name="diastolic_bp"
+                       class="form-control" min="30" max="200" placeholder="e.g. 80"
+                       value="{{ form_data.diastolic_bp if form_data else '' }}" />
+                <span class="input-group-text">mmHg</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Blood Sugar ──────────────────────────────────────────────────────── #}
+    <div class="col-12 col-md-6">
+      <div class="card helix-card h-100">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-1">
+            <i class="bi bi-droplet-half me-2 text-helix-purple"></i>Blood Sugar
+          </h5>
+          <p class="text-muted small mb-3">Normal fasting: 70–99 mg/dL</p>
+          <label for="blood_sugar" class="form-label fw-medium">Glucose Level</label>
+          <div class="input-group">
+            <input type="number" id="blood_sugar" name="blood_sugar"
+                   class="form-control" min="20" max="800" step="0.1" placeholder="e.g. 95"
+                   value="{{ form_data.blood_sugar if form_data else '' }}" />
+            <span class="input-group-text">mg/dL</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Heart Rate ───────────────────────────────────────────────────────── #}
+    <div class="col-12 col-md-4">
+      <div class="card helix-card h-100">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-1">
+            <i class="bi bi-heart-pulse me-2 text-danger"></i>Heart Rate
+          </h5>
+          <p class="text-muted small mb-3">Normal resting: 60–100 bpm</p>
+          <label for="heart_rate" class="form-label fw-medium">Pulse</label>
+          <div class="input-group">
+            <input type="number" id="heart_rate" name="heart_rate"
+                   class="form-control" min="20" max="300" placeholder="e.g. 72"
+                   value="{{ form_data.heart_rate if form_data else '' }}" />
+            <span class="input-group-text">bpm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── SpO₂ ─────────────────────────────────────────────────────────────── #}
+    <div class="col-12 col-md-4">
+      <div class="card helix-card h-100">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-1">
+            <i class="bi bi-lungs me-2 text-helix-blue"></i>SpO₂
+          </h5>
+          <p class="text-muted small mb-3">Normal: ≥95%</p>
+          <label for="spo2" class="form-label fw-medium">Oxygen Saturation</label>
+          <div class="input-group">
+            <input type="number" id="spo2" name="spo2"
+                   class="form-control" min="50" max="100" step="0.1" placeholder="e.g. 98"
+                   value="{{ form_data.spo2 if form_data else '' }}" />
+            <span class="input-group-text">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Temperature ──────────────────────────────────────────────────────── #}
+    <div class="col-12 col-md-4">
+      <div class="card helix-card h-100">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-1">
+            <i class="bi bi-thermometer-half me-2 text-helix-amber"></i>Temperature
+          </h5>
+          <p class="text-muted small mb-3">Normal: 36.1–37.2 °C</p>
+          <label for="body_temperature" class="form-label fw-medium">Body Temperature</label>
+          <div class="input-group">
+            <input type="number" id="body_temperature" name="body_temperature"
+                   class="form-control" min="30" max="45" step="0.1" placeholder="e.g. 36.6"
+                   value="{{ form_data.body_temperature if form_data else '' }}" />
+            <span class="input-group-text">°C</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Weight ───────────────────────────────────────────────────────────── #}
+    <div class="col-12 col-md-6">
+      <div class="card helix-card">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-3">
+            <i class="bi bi-person-standing me-2 text-helix-green"></i>Weight
+          </h5>
+          <label for="weight" class="form-label fw-medium">Body Weight</label>
+          <div class="input-group col-md-4">
+            <input type="number" id="weight" name="weight"
+                   class="form-control" min="1" max="500" step="0.1" placeholder="e.g. 70.5"
+                   value="{{ form_data.weight if form_data else '' }}" />
+            <span class="input-group-text">kg</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Notes ────────────────────────────────────────────────────────────── #}
+    <div class="col-12 col-md-6">
+      <div class="card helix-card">
+        <div class="card-body p-4">
+          <h5 class="card-title mb-3">
+            <i class="bi bi-chat-left-text me-2 text-muted"></i>Notes
+          </h5>
+          <label for="notes" class="form-label fw-medium">Optional Notes</label>
+          <textarea id="notes" name="notes" class="form-control"
+                    rows="3" maxlength="500"
+                    placeholder="e.g. measured after exercise, fasting reading…">{{ form_data.notes if form_data else '' }}</textarea>
+          <small class="text-muted" id="notes-counter">0 / 500</small>
+        </div>
+      </div>
+    </div>
+
+  </div>{# /row #}
+
+  <div class="d-flex align-items-center gap-3 mt-4">
+    <button type="submit" class="btn btn-helix-primary btn-lg px-5">
+      <i class="bi bi-save me-2"></i>Save Reading
+    </button>
+    <a href="{{ url_for('monitoring.index') }}" class="btn btn-outline-secondary btn-lg">
+      Cancel
+    </a>
+  </div>
+
+</form>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Notes character counter
+  const notesTA = document.getElementById('notes');
+  const notesCtr = document.getElementById('notes-counter');
+  notesTA.addEventListener('input', () => {
+    notesCtr.textContent = notesTA.value.length + ' / 500';
+  });
+
+  // Enforce: if either BP field has a value, both must be filled
+  const form = document.getElementById('vitals-form');
+  form.addEventListener('submit', function (e) {
+    const s = document.getElementById('systolic_bp').value.trim();
+    const d = document.getElementById('diastolic_bp').value.trim();
+    if ((s && !d) || (!s && d)) {
+      e.preventDefault();
+      alert('Please enter BOTH Systolic and Diastolic blood pressure values, or leave both empty.');
+    }
+  });
+</script>
+{% endblock %}

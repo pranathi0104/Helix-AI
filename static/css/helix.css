@@ -1,0 +1,894 @@
+/*
+ * helix.css — Helix AI custom stylesheet
+ *
+ * Layered on top of Bootstrap 5.
+ * Palette: IBM-inspired blue/green healthcare theme.
+ *
+ * Sections:
+ *  1. CSS Custom Properties (design tokens)
+ *  2. Global / Reset
+ *  3. Layout — sidebar + main
+ *  4. Sidebar navigation
+ *  5. Top bar
+ *  6. Flash messages
+ *  7. Page header
+ *  8. Cards
+ *  9. Dashboard — Health Score ring
+ * 10. Dashboard — Module cards
+ * 11. Dashboard — Stat cards
+ * 12. Dashboard — Agent list / Timeline
+ * 13. Module placeholder page
+ * 14. Authentication pages
+ * 15. Profile page
+ * 16. Forms
+ * 17. Badges & labels
+ * 18. Footer
+ * 19. Responsive — mobile sidebar
+ * 20. Utilities
+ */
+
+/* ============================================================
+   1. CSS Custom Properties
+   ============================================================ */
+:root {
+  /* Brand colours */
+  --helix-blue:         #1a73e8;
+  --helix-blue-dark:    #1557b0;
+  --helix-blue-light:   #e8f0fd;
+  --helix-green:        #1e8c59;
+  --helix-green-light:  #e6f4ed;
+  --helix-purple:       #7c5cd8;
+  --helix-purple-light: #f0ecfc;
+  --helix-amber:        #c77b00;
+  --helix-amber-light:  #fff3cd;
+  --helix-teal:         #0d9488;
+  --helix-red-light:    #fde8e8;
+  --helix-pink-light:   #fce7f3;
+
+  /* Neutral palette */
+  --helix-bg:           #f4f6fa;
+  --helix-surface:      #ffffff;
+  --helix-border:       #e2e8f0;
+  --helix-text:         #1e293b;
+  --helix-text-muted:   #64748b;
+
+  /* Sidebar */
+  --sidebar-width:      260px;
+  --sidebar-bg:         #0f172a;
+  --sidebar-text:       #94a3b8;
+  --sidebar-active-bg:  rgba(26, 115, 232, 0.15);
+  --sidebar-active:     #60a5fa;
+  --sidebar-hover-bg:   rgba(255,255,255,0.06);
+
+  /* Layout */
+  --topbar-height:      60px;
+  --radius:             12px;
+  --radius-sm:          8px;
+  --shadow-card:        0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-hover:       0 4px 16px rgba(0,0,0,0.10);
+  --transition:         0.2s ease;
+}
+
+/* ============================================================
+   2. Global / Reset
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+body.helix-body {
+  font-family: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--helix-bg);
+  color: var(--helix-text);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a { color: var(--helix-blue); }
+a:hover { color: var(--helix-blue-dark); }
+
+/* ============================================================
+   3. Layout — sidebar + main wrapper
+   ============================================================ */
+.helix-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  z-index: 1000;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: transform var(--transition);
+  scrollbar-width: none;
+}
+.helix-sidebar::-webkit-scrollbar { display: none; }
+
+.helix-main {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--transition);
+}
+
+/* Collapsed sidebar state (toggled via JS) */
+body.sidebar-collapsed .helix-sidebar { transform: translateX(0); }
+
+/* ============================================================
+   4. Sidebar navigation
+   ============================================================ */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--helix-blue);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.brand-icon i { color: #fff; font-size: 1.3rem; }
+.brand-name { display: block; color: #f1f5f9; font-weight: 700; font-size: 1rem; line-height: 1.2; }
+.brand-tagline { display: block; color: var(--sidebar-text); font-size: 0.72rem; }
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--helix-blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.user-name { display: block; color: #e2e8f0; font-size: 0.85rem; font-weight: 500; }
+.user-role { display: block; color: var(--sidebar-text); font-size: 0.72rem; }
+
+.sidebar-nav {
+  padding: 16px 12px;
+}
+.nav-section-label {
+  color: var(--sidebar-text);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 8px;
+  margin: 0 0 6px;
+}
+.sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--sidebar-text);
+  font-size: 0.85rem;
+  font-weight: 450;
+  text-decoration: none;
+  transition: background var(--transition), color var(--transition);
+  position: relative;
+}
+.sidebar-nav .nav-link i { font-size: 1rem; flex-shrink: 0; }
+.sidebar-nav .nav-link:hover {
+  background: var(--sidebar-hover-bg);
+  color: #e2e8f0;
+}
+.sidebar-nav .nav-link.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active);
+  font-weight: 500;
+}
+.nav-badge {
+  margin-left: auto;
+  background: rgba(255,255,255,0.08);
+  color: var(--sidebar-text);
+  font-size: 0.62rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+
+.sidebar-footer {
+  padding: 12px 12px 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.logout-link { color: #f87171 !important; }
+.logout-link:hover { background: rgba(248,113,113,0.1) !important; color: #fca5a5 !important; }
+
+/* ============================================================
+   5. Top bar
+   ============================================================ */
+.helix-topbar {
+  height: var(--topbar-height);
+  background: var(--helix-surface);
+  border-bottom: 1px solid var(--helix-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-left { display: flex; align-items: center; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.topbar-greeting { color: var(--helix-text-muted); font-size: 0.85rem; }
+.topbar-avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--helix-blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: opacity var(--transition);
+}
+.topbar-avatar:hover { opacity: 0.85; }
+
+.topbar-toggle-btn, .sidebar-toggle-btn {
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--helix-text-muted);
+  cursor: pointer;
+  font-size: 1.3rem;
+  line-height: 1;
+  transition: background var(--transition);
+}
+.topbar-toggle-btn:hover, .sidebar-toggle-btn:hover { background: var(--helix-bg); }
+
+.sidebar-toggle-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1100;
+  background: var(--sidebar-bg);
+  color: #94a3b8;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 999;
+}
+
+/* breadcrumb overrides */
+.breadcrumb { font-size: 0.8rem; }
+.breadcrumb-item + .breadcrumb-item::before { color: var(--helix-text-muted); }
+
+/* ============================================================
+   6. Flash messages
+   ============================================================ */
+.flash-container { padding: 16px 24px 0; }
+.auth-flash-container { margin-bottom: 16px; }
+
+/* ============================================================
+   7. Page header
+   ============================================================ */
+.helix-content { padding: 28px 24px; flex: 1; }
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.page-title { font-size: 1.5rem; font-weight: 700; color: var(--helix-text); margin: 0; }
+.page-subtitle { color: var(--helix-text-muted); margin: 4px 0 0; font-size: 0.9rem; }
+.page-header-actions { display: flex; align-items: center; gap: 8px; }
+.section-heading { font-size: 1rem; font-weight: 600; color: var(--helix-text-muted); letter-spacing: 0.01em; }
+
+/* ============================================================
+   8. Cards — base
+   ============================================================ */
+.helix-card {
+  border: 1px solid var(--helix-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  background: var(--helix-surface);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+.helix-card:hover { box-shadow: var(--shadow-hover); }
+.card-title { font-size: 0.95rem; font-weight: 600; color: var(--helix-text); }
+.card-icon-header { display: flex; align-items: center; gap: 10px; }
+.card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.card-icon i { font-size: 1rem; }
+.card-icon-lg { width: 52px; height: 52px; border-radius: var(--radius); }
+
+/* ============================================================
+   9. Dashboard — Health Score ring
+   ============================================================ */
+.health-score-card { background: linear-gradient(135deg, #f8fbff 0%, #f0f4ff 100%); }
+.score-ring { position: relative; width: 120px; height: 120px; }
+.score-svg { width: 120px; height: 120px; transform: rotate(-90deg); }
+.score-track { fill: none; stroke: var(--helix-border); stroke-width: 10; }
+.score-fill { fill: none; stroke: var(--helix-blue); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
+.score-placeholder-fill { stroke: var(--helix-border); }
+.score-value-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.score-number { font-size: 1.6rem; font-weight: 700; color: var(--helix-text); }
+
+/* ============================================================
+   10. Dashboard — Module cards
+   ============================================================ */
+.module-card { cursor: pointer; }
+.module-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.module-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.module-icon-wrap i { font-size: 1.4rem; }
+.module-footer { display: flex; align-items: center; justify-content: space-between; }
+.module-arrow { font-size: 1.2rem; color: var(--helix-border); transition: color var(--transition), transform var(--transition); }
+.module-card:hover .module-arrow { color: var(--helix-blue); transform: translateX(3px); }
+
+/* ============================================================
+   11. Dashboard — Stat cards
+   ============================================================ */
+.stat-card { cursor: default; }
+.stat-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.stat-icon-wrap i { font-size: 1.2rem; }
+.stat-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; }
+.stat-value { font-size: 1rem; font-weight: 600; color: var(--helix-text-muted); }
+.stat-badge { font-size: 0.62rem; background: var(--helix-bg); border: 1px solid var(--helix-border); border-radius: 4px; padding: 1px 5px; color: var(--helix-text-muted); }
+
+/* ============================================================
+   12. Dashboard — Agent list / Timeline
+   ============================================================ */
+.agent-list { list-style: none; padding: 0; margin: 0; }
+.agent-list li { display: flex; align-items: center; padding: 5px 0; font-size: 0.85rem; }
+.agent-list li i { font-size: 0.55rem; flex-shrink: 0; }
+
+.timeline-placeholder { opacity: 0.7; }
+
+/* ============================================================
+   13. Module placeholder page
+   ============================================================ */
+.placeholder-module-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--helix-blue-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.placeholder-module-icon i { font-size: 2.5rem; color: var(--helix-blue); }
+.milestone-badge-lg {
+  display: inline-block;
+  background: var(--helix-blue-light);
+  color: var(--helix-blue-dark);
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.feature-list { list-style: none; padding: 0; margin: 0; }
+.feature-list li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--helix-border); font-size: 0.875rem; }
+.feature-list li:last-child { border-bottom: none; }
+.feature-check i { color: var(--helix-green); font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ============================================================
+   14. Authentication pages
+   ============================================================ */
+.helix-auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fd 50%, #f0fdf4 100%);
+}
+.auth-card-container { width: 100%; max-width: 440px; }
+.auth-brand-icon {
+  width: 64px;
+  height: 64px;
+  background: var(--helix-blue);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.auth-brand-icon i { color: #fff; font-size: 1.8rem; }
+.auth-brand-title { font-size: 1.6rem; font-weight: 700; color: var(--helix-text); }
+.auth-brand-subtitle { color: var(--helix-text-muted); font-size: 0.85rem; margin-top: -4px; }
+.auth-card { border-radius: var(--radius) !important; }
+
+/* Password strength indicator */
+.password-strength-bar {
+  height: 4px;
+  background: var(--helix-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.strength-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* ============================================================
+   15. Profile page
+   ============================================================ */
+.profile-dl { display: grid; grid-template-columns: 1fr 1.5fr; gap: 8px 16px; margin: 0; }
+.profile-dl dt { color: var(--helix-text-muted); font-size: 0.8rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; display: flex; align-items: center; }
+.profile-dl dd { color: var(--helix-text); font-weight: 500; margin: 0; display: flex; align-items: center; }
+
+.condition-check { border: 1px solid var(--helix-border); border-radius: var(--radius-sm); padding: 8px 12px; cursor: pointer; transition: background var(--transition); }
+.condition-check:hover { background: var(--helix-blue-light); }
+
+.lifestyle-switch { padding: 8px 0; }
+
+/* ============================================================
+   16. Forms
+   ============================================================ */
+.form-control, .form-select {
+  border-color: var(--helix-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--helix-blue);
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+}
+.input-group .form-control { border-radius: 0; }
+.input-group .input-group-text { background: #f8fafc; border-color: var(--helix-border); }
+.form-label { font-size: 0.85rem; font-weight: 500; color: var(--helix-text); }
+
+/* ============================================================
+   17. Badges & labels
+   ============================================================ */
+.helix-condition-badge {
+  background: var(--helix-blue-light);
+  color: var(--helix-blue-dark);
+  border: 1px solid rgba(26,115,232,0.2);
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+}
+.helix-milestone-badge {
+  background: var(--helix-bg);
+  color: var(--helix-text-muted);
+  border: 1px solid var(--helix-border);
+  font-weight: 400;
+  font-size: 0.72rem;
+}
+.helix-badge-date {
+  background: var(--helix-bg);
+  color: var(--helix-text-muted);
+  border: 1px solid var(--helix-border);
+  font-weight: 500;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+/* ============================================================
+   18. Buttons
+   ============================================================ */
+.btn-helix-primary {
+  background: var(--helix-blue);
+  border-color: var(--helix-blue);
+  color: #fff;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), box-shadow var(--transition);
+}
+.btn-helix-primary:hover, .btn-helix-primary:focus {
+  background: var(--helix-blue-dark);
+  border-color: var(--helix-blue-dark);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+}
+.btn-outline-helix {
+  border-color: var(--helix-blue);
+  color: var(--helix-blue);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+}
+.btn-outline-helix:hover { background: var(--helix-blue-light); color: var(--helix-blue-dark); }
+.link-helix { color: var(--helix-blue); text-decoration: none; }
+.link-helix:hover { text-decoration: underline; }
+
+/* colour helpers for tinted backgrounds */
+.bg-helix-blue-light   { background-color: var(--helix-blue-light)   !important; }
+.bg-helix-green-light  { background-color: var(--helix-green-light)  !important; }
+.bg-helix-purple-light { background-color: var(--helix-purple-light) !important; }
+.bg-helix-amber-light  { background-color: var(--helix-amber-light)  !important; }
+.bg-helix-red-light    { background-color: var(--helix-red-light)    !important; }
+.bg-helix-pink-light   { background-color: var(--helix-pink-light)   !important; }
+.text-helix-blue   { color: var(--helix-blue)   !important; }
+.text-helix-green  { color: var(--helix-green)  !important; }
+.text-helix-purple { color: var(--helix-purple) !important; }
+.text-helix-amber  { color: var(--helix-amber)  !important; }
+.text-purple { color: var(--helix-purple) !important; }
+
+/* ============================================================
+   19. Footer
+   ============================================================ */
+.helix-footer {
+  border-top: 1px solid var(--helix-border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--helix-text-muted);
+  background: var(--helix-surface);
+}
+.footer-disclaimer { max-width: 400px; }
+
+/* ============================================================
+   21. AI Clinical Assessment module
+   ============================================================ */
+
+/* Disclaimer banner */
+.assessment-disclaimer {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 0.85rem;
+}
+
+/* Symptom textarea */
+.assessment-textarea {
+  min-height: 130px;
+  resize: vertical;
+  font-size: 0.875rem;
+}
+
+/* How-it-works ordered steps */
+.assessment-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.assessment-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--helix-text);
+}
+.step-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  background: var(--helix-blue);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+/* IBM model info card */
+.assessment-ibm-card {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f4ff 100%);
+  border: 1px solid rgba(26,115,232,0.15) !important;
+}
+
+/* Inline condition checklist in form */
+.condition-checklist {
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid var(--helix-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: #fafbfd;
+}
+.condition-checklist .form-check { margin-bottom: 4px; }
+
+/* ── Result page ── */
+
+/* Emergency alert */
+.assessment-emergency-alert {
+  background: #fff1f2;
+  border: 2px solid #fca5a5;
+  color: #7f1d1d;
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.assessment-emergency-alert i { color: #ef4444; }
+
+/* Severity banners */
+.assessment-sev-high    { background:#fff1f2; border:1px solid #fca5a5; color:#7f1d1d; border-radius:var(--radius); padding:12px 16px; }
+.assessment-sev-medium  { background:#fffbeb; border:1px solid #fde68a; color:#78350f; border-radius:var(--radius); padding:12px 16px; }
+.assessment-sev-low     { background:#f0fdf4; border:1px solid #86efac; color:#14532d; border-radius:var(--radius); padding:12px 16px; }
+.assessment-sev-unknown { background:#f8fafc; border:1px solid var(--helix-border); color:var(--helix-text-muted); border-radius:var(--radius); padding:12px 16px; }
+
+/* Condition badges on result page */
+.assessment-condition-badge {
+  background: var(--helix-blue-light);
+  color: var(--helix-blue-dark);
+  border: 1px solid rgba(26,115,232,0.25);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 5px 12px;
+}
+
+/* Missing information list */
+.assessment-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.assessment-info-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--helix-border);
+  font-size: 0.875rem;
+  color: var(--helix-text);
+}
+.assessment-info-list li:last-child { border-bottom: none; }
+.assessment-info-list li::before {
+  content: "?";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--helix-amber-light);
+  color: var(--helix-amber);
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Severity circle on summary card */
+.assessment-sev-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1.2;
+}
+.assessment-sev-circle--low       { background: #dcfce7; color: #15803d; border: 2px solid #86efac; }
+.assessment-sev-circle--medium,
+.assessment-sev-circle--moderate  { background: #fef9c3; color: #854d0e; border: 2px solid #fde047; }
+.assessment-sev-circle--high      { background: #fee2e2; color: #b91c1c; border: 2px solid #fca5a5; }
+.assessment-sev-circle--emergency { background: #fecaca; color: #7f1d1d; border: 2px solid #f87171; }
+.assessment-sev-circle--unknown   { background: var(--helix-bg); color: var(--helix-text-muted); border: 2px solid var(--helix-border); }
+
+/* Emergency / no-emergency badge */
+.assessment-emergency-badge {
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+/* ── Result page v2 — new section cards ── */
+
+/* Red flags card — subtle border tint */
+.result-red-flags-card {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  background: #fffbfb;
+}
+
+/* Shared icon + text list style used by red_flags, home_care, urgent_if */
+.result-flag-list,
+.result-care-list,
+.result-urgent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.result-flag-list li,
+.result-care-list li,
+.result-urgent-list li {
+  display: flex;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--helix-border);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--helix-text);
+}
+.result-flag-list li:last-child,
+.result-care-list li:last-child,
+.result-urgent-list li:last-child { border-bottom: none; }
+
+/* ============================================================
+   22. Chronic Disease Monitoring module
+   ============================================================ */
+
+/* Alert banner */
+.monitoring-alert-banner {
+  background: #fff1f2;
+  border: 2px solid #fca5a5;
+  color: #7f1d1d;
+  border-radius: var(--radius);
+  padding: 14px 18px;
+}
+.monitoring-alert-banner i { color: #ef4444; }
+
+/* ── Vital cards grid ── */
+.vital-card { transition: box-shadow var(--transition), transform var(--transition); }
+.vital-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+
+.vital-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.vital-icon i { font-size: 1.1rem; }
+
+.vital-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--helix-text-muted);
+  margin-bottom: 2px;
+}
+.vital-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--helix-text);
+  line-height: 1.2;
+  margin-bottom: 0;
+}
+.vital-unit { font-size: 0.9rem; font-weight: 400; color: var(--helix-text-muted); }
+.vital-unit-full {
+  font-size: 0.7rem;
+  color: var(--helix-text-muted);
+  margin-bottom: 4px;
+}
+.vital-badge { font-size: 0.68rem; padding: 3px 8px; border-radius: 20px; }
+
+/* ── Chart container ── */
+.chart-container {
+  position: relative;
+  height: 200px;
+}
+
+/* ── History table ── */
+.history-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--helix-text-muted);
+  border-bottom: 2px solid var(--helix-border);
+  padding: 10px 12px;
+  background: #fafbfd;
+}
+.history-table td {
+  font-size: 0.82rem;
+  padding: 10px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--helix-border);
+}
+.history-badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; }
+
+/* ── Health timeline list ── */
+.timeline-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--helix-border);
+}
+.timeline-item:last-child { border-bottom: none; }
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.timeline-summary {
+  font-size: 0.85rem;
+  color: var(--helix-text);
+  line-height: 1.4;
+}
+
+/* ============================================================
+   20. Responsive — mobile sidebar overlay
+   ============================================================ */
+@media (max-width: 767.98px) {
+  .helix-sidebar {
+    transform: translateX(calc(-1 * var(--sidebar-width)));
+    z-index: 1050;
+  }
+  .helix-sidebar.open {
+    transform: translateX(0);
+  }
+  .helix-main {
+    margin-left: 0;
+  }
+  .helix-content { padding: 20px 16px; }
+  .page-title { font-size: 1.2rem; }
+  .profile-dl { grid-template-columns: 1fr; }
+}
+
+/* Desktop sidebar collapse support */
+@media (min-width: 768px) {
+  .helix-sidebar.collapsed { transform: translateX(calc(-1 * var(--sidebar-width))); }
+  .helix-main.sidebar-collapsed { margin-left: 0; }
+}

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ title | default('Helix AI') }} — Helix AI{% endblock %}</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <!-- Google Fonts — Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Helix AI custom styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/helix.css') }}" />
+
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="helix-body">
+
+  {% if current_user.is_authenticated %}
+  <!-- =====================================================================
+       SIDEBAR NAVIGATION
+       ===================================================================== -->
+  <nav id="helix-sidebar" class="helix-sidebar d-flex flex-column">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <i class="bi bi-heart-pulse-fill"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">Helix AI</span>
+        <span class="brand-tagline">Healthcare Companion</span>
+      </div>
+    </div>
+
+    <!-- User summary -->
+    <div class="sidebar-user">
+      <div class="user-avatar">
+        {{ current_user.username[0].upper() }}
+      </div>
+      <div class="user-info">
+        <span class="user-name">{{ current_user.profile.full_name or current_user.username }}</span>
+        <span class="user-role">Patient</span>
+      </div>
+    </div>
+
+    <!-- Navigation links -->
+    <div class="sidebar-nav flex-grow-1">
+      <p class="nav-section-label">Main</p>
+      <a href="{{ url_for('dashboard.home') }}"
+         class="nav-link {% if request.endpoint == 'dashboard.home' %}active{% endif %}">
+        <i class="bi bi-grid-1x2-fill"></i>
+        <span>Health Command Center</span>
+      </a>
+
+      <p class="nav-section-label mt-3">Clinical Modules</p>
+      <a href="{{ url_for('chat.chat_index') }}"
+         class="nav-link {% if request.endpoint and 'chat' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-robot"></i>
+        <span>AI Assistant</span>
+        <span class="nav-badge text-bg-primary">Chat</span>
+      </a>
+      <a href="{{ url_for('assessment.index') }}"
+         class="nav-link {% if request.endpoint == 'assessment.index' %}active{% endif %}">
+        <i class="bi bi-clipboard2-pulse"></i>
+        <span>AI Clinical Assessment</span>
+        <span class="nav-badge">M3</span>
+      </a>
+      <a href="{{ url_for('monitoring.index') }}"
+         class="nav-link {% if request.endpoint and 'monitoring' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-heart-pulse"></i>
+        <span>Chronic Disease Monitoring</span>
+      </a>
+      <a href="{{ url_for('risk.index') }}"
+         class="nav-link {% if request.endpoint and 'risk' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-shield-exclamation"></i>
+        <span>Risk Prediction Agent</span>
+      </a>
+      <a href="{{ url_for('lifestyle.index') }}"
+         class="nav-link {% if request.endpoint and 'lifestyle' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-heart-pulse"></i>
+        <span>Lifestyle Recommendation Agent</span>
+      </a>
+      <a href="{{ url_for('treatment.index') }}"
+         class="nav-link {% if request.endpoint and 'treatment' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-capsule"></i>
+        <span>Treatment Companion</span>
+      </a>
+      <a href="{{ url_for('rag.index') }}"
+         class="nav-link {% if request.endpoint and 'rag' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-journal-medical"></i>
+        <span>Knowledge Base</span>
+      </a>
+      <a href="{{ url_for('reports.index') }}"
+         class="nav-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-file-earmark-medical"></i>
+        <span>AI Health Reports</span>
+        <span class="nav-badge">M7</span>
+      </a>
+
+      <p class="nav-section-label mt-3">Account</p>
+      <a href="{{ url_for('profile.view') }}"
+         class="nav-link {% if 'profile' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-person-circle"></i>
+        <span>Profile</span>
+      </a>
+      <a href="{{ url_for('modules.settings') }}"
+         class="nav-link {% if request.endpoint == 'modules.settings' %}active{% endif %}">
+        <i class="bi bi-gear"></i>
+        <span>Settings</span>
+      </a>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+      <a href="{{ url_for('auth.logout') }}" class="nav-link logout-link">
+        <i class="bi bi-box-arrow-left"></i>
+        <span>Logout</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Sidebar toggle (mobile) -->
+  <button id="sidebar-toggle" class="sidebar-toggle-btn d-md-none" aria-label="Toggle navigation">
+    <i class="bi bi-list"></i>
+  </button>
+  <div id="sidebar-backdrop" class="sidebar-backdrop d-none"></div>
+
+  <!-- =====================================================================
+       MAIN CONTENT WRAPPER
+       ===================================================================== -->
+  <div class="helix-main">
+
+    <!-- Top bar -->
+    <header class="helix-topbar">
+      <div class="topbar-left">
+        <button id="topbar-toggle" class="topbar-toggle-btn d-none d-md-flex" aria-label="Toggle sidebar">
+          <i class="bi bi-list"></i>
+        </button>
+        <nav aria-label="breadcrumb" class="ms-2">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('dashboard.home') }}">Home</a>
+            </li>
+            {% block breadcrumb %}{% endblock %}
+          </ol>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-greeting d-none d-md-inline">
+          Hello, <strong>{{ current_user.profile.full_name.split()[0] if current_user.profile and current_user.profile.full_name else current_user.username }}</strong>
+        </span>
+        <a href="{{ url_for('profile.view') }}" class="topbar-avatar" title="View Profile">
+          {{ current_user.username[0].upper() }}
+        </a>
+      </div>
+    </header>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              <i class="bi {% if category == 'success' %}bi-check-circle-fill{% elif category == 'danger' %}bi-exclamation-triangle-fill{% elif category == 'warning' %}bi-exclamation-circle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Page content -->
+    <main class="helix-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="helix-footer">
+      <span>Helix AI &copy; {{ 2024 }} — IBM SkillsBuild Project</span>
+      <span class="footer-disclaimer">
+        <i class="bi bi-info-circle me-1"></i>
+        For informational purposes only. Not a substitute for professional medical advice.
+      </span>
+    </footer>
+
+  </div><!-- /.helix-main -->
+
+  {% else %}
+  <!-- Unauthenticated layout — simple centred container -->
+  <div class="helix-auth-wrapper">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="auth-flash-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block auth_content %}{% endblock %}
+  </div>
+  {% endif %}
+
+  <!-- Bootstrap 5 JS bundle (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Helix AI custom scripts -->
+  <script src="{{ url_for('static', filename='js/helix.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

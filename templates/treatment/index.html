@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Treatment Companion{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Treatment Companion</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-gray-800">
+      <i class="bi bi-capsule text-primary me-2"></i>Treatment Companion
+    </h2>
+    <a href="{{ url_for('treatment.add') }}" class="btn btn-primary shadow-sm">
+      <i class="bi bi-plus-lg me-1"></i> Add Medication
+    </a>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card border-left-primary shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                Active Medications
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_count }}</div>
+            </div>
+            <div class="col-auto">
+              <i class="bi bi-prescription2 fs-2 text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card border-left-success shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                Adherence Rate
+              </div>
+              <div class="row no-gutters align-items-center">
+                <div class="col-auto">
+                  <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ adherence }}%</div>
+                </div>
+                <div class="col">
+                  <div class="progress progress-sm mr-2" style="height: 10px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ adherence }}%" aria-valuenow="{{ adherence }}" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="bi bi-clipboard2-check fs-2 text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card border-left-warning shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                Missed Doses (All Time)
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ missed_count }}</div>
+            </div>
+            <div class="col-auto">
+              <i class="bi bi-exclamation-triangle fs-2 text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Today's Medications -->
+    <div class="col-lg-8 mb-4">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Today's Schedule</h6>
+        </div>
+        <div class="card-body">
+          {% if todays_logs %}
+            <div class="list-group list-group-flush">
+              {% for log in todays_logs %}
+              <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                <div>
+                  <h6 class="mb-0 fw-bold">{{ log.medication.name }}</h6>
+                  <small class="text-muted">{{ log.medication.dosage }} • {{ log.medication.frequency }}</small>
+                </div>
+                <div>
+                  {% if log.status == 'pending' %}
+                    <form action="{{ url_for('treatment.log_status', log_id=log.id, status='taken') }}" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-circle"></i> Take</button>
+                    </form>
+                    <form action="{{ url_for('treatment.log_status', log_id=log.id, status='missed') }}" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle"></i> Miss</button>
+                    </form>
+                  {% elif log.status == 'taken' %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Taken at {{ log.taken_at | format_ist('%H:%M') if log.taken_at else 'Unknown' }}</span>
+                  {% elif log.status == 'missed' %}
+                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Missed</span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ log.status|capitalize }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-calendar2-check text-muted fs-1 mb-3 d-block"></i>
+              <p class="text-muted mb-0">No medications scheduled for today.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- All Medications Directory -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Medication Directory</h6>
+          <div class="input-group input-group-sm" style="width: 250px;">
+            <input type="text" id="medSearch" class="form-control" placeholder="Search medications..." onkeyup="filterMeds()">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle" id="medTable">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Name & Dosage</th>
+                  <th>Frequency</th>
+                  <th>Duration</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for med in all_meds %}
+                <tr>
+                  <td>
+                    {% if med.is_active %}
+                      <span class="badge bg-success">Active</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Completed</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <strong>{{ med.name }}</strong><br>
+                    <small class="text-muted">{{ med.dosage }}</small>
+                  </td>
+                  <td>{{ med.frequency }}</td>
+                  <td>
+                    <small>
+                      {{ med.start_date | format_ist('%b %d, %Y') }} - 
+                      {{ med.end_date | format_ist('%b %d, %Y') if med.end_date else 'Ongoing' }}
+                    </small>
+                  </td>
+                  <td>
+                    <a href="{{ url_for('treatment.edit', med_id=med.id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <form action="{{ url_for('treatment.delete', med_id=med.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this medication?');">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    No medications added yet. Click "Add Medication" to start.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow mb-4 border-left-info">
+        <div class="card-body">
+          <h6 class="font-weight-bold text-info mb-3"><i class="bi bi-info-circle me-2"></i> Reminder</h6>
+          <p class="mb-0 small">Please remember to take your medications with water unless directed otherwise by your healthcare provider. Consult your doctor if you experience any side effects.</p>
+        </div>
+      </div>
+
+      <!-- Medication Timeline / Upcoming -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Active Medications</h6>
+        </div>
+        <div class="card-body">
+          {% if upcoming_meds %}
+            <ul class="list-unstyled">
+              {% for med in upcoming_meds %}
+              <li class="mb-3 border-bottom pb-2">
+                <div class="d-flex align-items-center">
+                  <div class="flex-shrink-0 bg-light rounded-circle p-2 me-3">
+                    <i class="bi bi-capsule text-primary"></i>
+                  </div>
+                  <div>
+                    <h6 class="mb-0">{{ med.name }}</h6>
+                    <small class="text-muted">{{ med.frequency }}</small>
+                  </div>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted text-center small mb-0">No active medications.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function filterMeds() {
+  var input, filter, table, tr, td, i, txtValue;
+  input = document.getElementById("medSearch");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("medTable");
+  tr = table.getElementsByTagName("tr");
+  for (i = 1; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[1];
+    if (td) {
+      txtValue = td.textContent || td.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }       
+  }
+}
+</script>
+{% endblock %}

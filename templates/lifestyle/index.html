@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Lifestyle Recommendation Agent{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-4 align-items-center">
+    <div class="col">
+      <h1 class="h3 mb-0 text-gray-800">
+        <i class="bi bi-heart-pulse text-primary me-2"></i>Lifestyle Recommendation Agent
+      </h1>
+      <p class="text-muted mt-2">Personalized, deterministic lifestyle guidance based on your risk profile and vitals.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 mb-4">
+      <div class="card helix-card border-start border-4 border-{{ 'danger' if data.risk_classification in ['High', 'Critical'] else ('warning' if data.risk_classification == 'Moderate' else 'success') }}">
+        <div class="card-body">
+          <h5 class="card-title">Risk Profile Context</h5>
+          <p class="mb-0">
+            Current Risk Classification: <strong>{{ data.risk_classification }}</strong>
+            {% if data.latest_date %}
+              <span class="text-muted ms-3 small">Based on vitals from: {{ data.latest_date | format_ist }}</span>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    {% for category, items in data.recommendations.items() %}
+      {% if items %}
+      <div class="col-12 col-xl-6 mb-4">
+        <div class="card helix-card h-100">
+          <div class="card-header bg-transparent border-0 pt-4 pb-0">
+            <h5 class="card-title mb-0 fw-bold">
+              {% if category == 'Nutrition' %}<i class="bi bi-egg-fried text-warning me-2"></i>
+              {% elif category == 'Physical Activity' %}<i class="bi bi-person-walking text-success me-2"></i>
+              {% elif category == 'Sleep' %}<i class="bi bi-moon-stars text-primary me-2"></i>
+              {% elif category == 'Hydration' %}<i class="bi bi-droplet text-info me-2"></i>
+              {% else %}<i class="bi bi-clipboard2-pulse text-secondary me-2"></i>{% endif %}
+              {{ category }}
+            </h5>
+          </div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              {% for rec in items %}
+              <li class="list-group-item px-0 py-3">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <h6 class="fw-bold mb-0 text-{{ 'danger' if rec.priority == 'High' else ('warning' if rec.priority == 'Medium' else 'success') }}">
+                    <i class="bi bi-exclamation-triangle-fill me-1" {% if rec.priority != 'High' %}style="display:none;"{% endif %}></i>
+                    {{ rec.title }}
+                  </h6>
+                  <span class="badge bg-{{ 'danger' if rec.priority == 'High' else ('warning text-dark' if rec.priority == 'Medium' else 'success') }} rounded-pill">
+                    {{ rec.priority }} Priority
+                  </span>
+                </div>
+                <p class="mb-1 text-dark">{{ rec.explanation }}</p>
+                <small class="text-muted"><i class="bi bi-info-circle me-1"></i><strong>Reason:</strong> {{ rec.reason }}</small>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

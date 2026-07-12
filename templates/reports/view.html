@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Health Report - {{ report.generated_at | format_ist }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mb-5" id="printable-report">
+  <!-- Action Bar (Hidden on print) -->
+  <div class="d-flex justify-content-between align-items-center mb-4 d-print-none">
+    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary btn-sm shadow-sm">
+      <i class="bi bi-arrow-left"></i> Back to History
+    </a>
+    <button onclick="window.print()" class="btn btn-primary shadow-sm">
+      <i class="bi bi-printer me-1"></i> Print / Save PDF
+    </button>
+  </div>
+
+  <div class="card helix-card shadow-sm border-0">
+    <div class="card-body p-5">
+      
+      <!-- Report Header -->
+      <div class="text-center mb-5 pb-3 border-bottom">
+        <h2 class="fw-bold text-primary mb-1">Helix AI Health Report</h2>
+        <p class="text-muted mb-0">Generated on {{ report.generated_at | format_ist }}</p>
+      </div>
+
+      <!-- 1. Patient Profile Summary -->
+      <h4 class="fw-bold mb-3 border-bottom pb-2">Patient Profile</h4>
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <p class="mb-1"><strong>Name:</strong> {{ data.profile.full_name }}</p>
+          <p class="mb-1"><strong>Age:</strong> {{ data.profile.age }}</p>
+          <p class="mb-1"><strong>Gender:</strong> {{ data.profile.gender }}</p>
+          <p class="mb-1"><strong>Blood Group:</strong> {{ data.profile.blood_group }}</p>
+        </div>
+        <div class="col-md-6">
+          <p class="mb-1"><strong>Reported Conditions:</strong></p>
+          <ul class="mb-0 ps-3">
+            {% for cond in data.profile.conditions %}
+              <li>{{ cond }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2. Latest Vitals Summary -->
+      <h4 class="fw-bold mb-3 border-bottom pb-2">Latest Vitals Summary</h4>
+      {% if data.vitals %}
+      <div class="row mb-4">
+        <div class="col-sm-4 mb-2"><span class="text-muted">Recorded:</span> <br><strong>{{ data.vitals.date_time | format_ist }}</strong></div>
+        <div class="col-sm-4 mb-2"><span class="text-muted">Blood Pressure:</span> <br><strong>{{ data.vitals.systolic_bp }}/{{ data.vitals.diastolic_bp }} mmHg</strong></div>
+        <div class="col-sm-4 mb-2"><span class="text-muted">Heart Rate:</span> <br><strong>{{ data.vitals.heart_rate }} bpm</strong></div>
+        <div class="col-sm-4 mb-2"><span class="text-muted">Blood Sugar:</span> <br><strong>{{ data.vitals.blood_sugar }} mg/dL</strong></div>
+        <div class="col-sm-4 mb-2"><span class="text-muted">SpO2:</span> <br><strong>{{ data.vitals.spo2 }}%</strong></div>
+        <div class="col-sm-4 mb-2"><span class="text-muted">Temperature:</span> <br><strong>{{ data.vitals.body_temperature }}°C</strong></div>
+        <div class="col-sm-4 mb-2"><span class="text-muted">Weight:</span> <br><strong>{{ data.vitals.weight }} kg</strong></div>
+      </div>
+      {% else %}
+      <p class="text-muted mb-4">No vitals data available.</p>
+      {% endif %}
+
+      <!-- 3. Risk Assessment & Trends -->
+      <h4 class="fw-bold mb-3 border-bottom pb-2">Risk Assessment</h4>
+      <div class="mb-4">
+        <p class="mb-2"><strong>Risk Score:</strong> {{ data.risk.score }} / 100</p>
+        <p class="mb-2"><strong>Classification:</strong> <span class="badge bg-{{ 'danger' if data.risk.classification in ['High', 'Critical'] else ('warning text-dark' if data.risk.classification == 'Moderate' else 'success') }}">{{ data.risk.classification }}</span></p>
+        
+        {% if data.risk.factors %}
+        <p class="mb-1 mt-3"><strong>Contributing Factors:</strong></p>
+        <ul class="ps-3 mb-3 text-danger">
+          {% for f in data.risk.factors %}
+            <li>{{ f }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        
+        {% if data.risk.trend %}
+        <p class="mb-1"><strong>Trend Analysis:</strong></p>
+        <p class="text-muted">{{ data.risk.trend }}</p>
+        {% endif %}
+      </div>
+
+      <!-- 4. Lifestyle Recommendations -->
+      <h4 class="fw-bold mb-3 border-bottom pb-2">Lifestyle Recommendations</h4>
+      <div class="mb-4">
+        {% for category, items in data.lifestyle.items() %}
+          {% if items %}
+          <h6 class="fw-bold mt-3">{{ category }}</h6>
+          <ul class="list-group list-group-flush mb-3">
+            {% for item in items %}
+            <li class="list-group-item px-0 py-2 border-0">
+              <strong>{{ item.title }}</strong> ({{ item.priority }} Priority)
+              <p class="mb-0 text-muted small">{{ item.explanation }}</p>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- 5. Medications Summary -->
+      <h4 class="fw-bold mb-3 border-bottom pb-2">Active Medications</h4>
+      {% if data.medications %}
+      <div class="table-responsive mb-4">
+        <table class="table table-sm table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Medication</th>
+              <th>Dosage</th>
+              <th>Frequency</th>
+              <th>Adherence</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in data.medications %}
+            <tr>
+              <td>{{ m.name }}</td>
+              <td>{{ m.dosage }}</td>
+              <td>{{ m.frequency }}</td>
+              <td>{{ m.adherence }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted mb-4">No active medications logged.</p>
+      {% endif %}
+
+      <!-- 6. Recent Timeline Events -->
+      <h4 class="fw-bold mb-1 border-bottom pb-2">Recent Health Timeline (Historical Events)</h4>
+      <p class="small text-muted mb-3 fst-italic">Timeline entries reflect the patient's status at the time each event was recorded.</p>
+      {% if data.timeline %}
+      <ul class="list-unstyled mb-4 ps-2">
+        {% for ev in data.timeline %}
+        <li class="mb-2 border-start border-3 border-primary ps-3">
+          <small class="text-muted d-block">{{ ev.date | format_ist }}</small>
+          <span>{{ ev.summary }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted mb-4">No recent events logged.</p>
+      {% endif %}
+
+      <!-- 7. RAG Knowledge References -->
+      {% if data.rag_references %}
+      <h4 class="fw-bold mb-3 border-bottom pb-2">Related Knowledge Base References</h4>
+      <div class="mb-4">
+        {% for ref in data.rag_references %}
+        <div class="card bg-light border-0 mb-2">
+          <div class="card-body p-3">
+            <h6 class="fw-bold mb-1"><i class="bi bi-journal-medical me-2"></i>{{ ref.title }}</h6>
+            <p class="small text-muted mb-1">{{ ref.text }}</p>
+            <small class="text-primary">Source: {{ ref.source }}</small>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Footer / Disclaimer -->
+      <div class="mt-5 pt-3 border-top text-center text-muted small">
+        <p class="mb-0"><strong>Disclaimer:</strong> This report is generated by an AI assistant for informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+@media print {
+  body, html { 
+    background-color: white !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .navbar, .sidebar, .d-print-none, footer.sticky-footer { display: none !important; }
+  #content-wrapper { padding: 0 !important; margin: 0 !important; }
+  .card { box-shadow: none !important; border: none !important; }
+  .container-fluid { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important;}
+  .card-body { page-break-inside: avoid; }
+  * { float: none !important; }
+}
+</style>
+{% endblock %}

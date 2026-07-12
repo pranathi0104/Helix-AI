@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}AI Clinical Assessment{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">AI Clinical Assessment</li>
+{% endblock %}
+
+{% block content %}
+
+<!-- =========================================================================
+     Page header
+     ========================================================================= -->
+<div class="page-header mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <div class="card-icon card-icon-lg bg-helix-blue-light">
+      <i class="bi bi-clipboard2-pulse text-helix-blue" style="font-size:1.4rem;"></i>
+    </div>
+    <div>
+      <h1 class="page-title mb-0">AI Clinical Assessment</h1>
+      <p class="page-subtitle mb-0">
+        Describe your symptoms and receive an AI-powered triage assessment from IBM Granite.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     Error alert (shown when Granite returns an error)
+     ========================================================================= -->
+{% if error %}
+<div class="alert alert-danger border-0 d-flex align-items-start gap-3 mb-4" role="alert">
+  <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1" style="font-size:1.1rem;"></i>
+  <div>
+    <strong>Assessment could not be completed.</strong><br>
+    <span class="small">{{ error }}</span>
+  </div>
+</div>
+{% endif %}
+
+<!-- =========================================================================
+     Medical disclaimer banner
+     ========================================================================= -->
+<div class="alert assessment-disclaimer mb-4" role="note">
+  <i class="bi bi-shield-exclamation me-2"></i>
+  <span>
+    <strong>Important:</strong> This AI assessment is for informational purposes only and does
+    <strong>not</strong> constitute medical advice, diagnosis, or treatment.
+    Always consult a qualified healthcare professional.
+    If you are experiencing a medical emergency, call emergency services immediately.
+  </span>
+</div>
+
+<!-- =========================================================================
+     Symptom form
+     ========================================================================= -->
+<div class="row g-4">
+
+  <div class="col-12 col-lg-8">
+    <div class="card helix-card">
+      <div class="card-body p-4">
+
+        <h5 class="card-title mb-4">
+          <i class="bi bi-pencil-square me-2 text-helix-blue"></i>Symptom Input
+        </h5>
+
+        <form method="POST" action="{{ url_for('assessment.submit') }}" novalidate
+              id="assessment-form">
+
+          <!-- Symptoms textarea -->
+          <div class="mb-4">
+            <label for="symptoms" class="form-label fw-semibold">
+              Describe your symptoms
+              <span class="text-danger">*</span>
+            </label>
+            <textarea
+              id="symptoms"
+              name="symptoms"
+              class="form-control assessment-textarea"
+              rows="5"
+              maxlength="2000"
+              placeholder="Example: I have had a persistent headache for the past 2 days, along with mild fever and fatigue…"
+              required
+            >{{ prefill.get('symptoms', '') }}</textarea>
+            <div class="d-flex justify-content-between mt-1">
+              <small class="text-muted">Be as specific as possible — include when symptoms started, severity, and any triggers.</small>
+              <small class="text-muted" id="char-count">0 / 2000</small>
+            </div>
+          </div>
+
+          <!-- Patient context row -->
+          <div class="row g-3 mb-4">
+
+            <!-- Age -->
+            <div class="col-12 col-sm-4">
+              <label for="age" class="form-label fw-semibold">Age</label>
+              <input
+                type="number"
+                id="age"
+                name="age"
+                class="form-control"
+                min="1" max="120"
+                placeholder="Years"
+                value="{{ prefill.get('age', '') }}"
+              />
+            </div>
+
+            <!-- Gender -->
+            <div class="col-12 col-sm-4">
+              <label for="gender" class="form-label fw-semibold">Gender</label>
+              <select id="gender" name="gender" class="form-select">
+                <option value="">Select gender</option>
+                {% for opt in gender_options %}
+                  <option value="{{ opt }}"
+                    {% if prefill.get('gender') == opt %}selected{% endif %}>
+                    {{ opt }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Existing conditions (multi-select) -->
+            <div class="col-12 col-sm-4">
+              <label class="form-label fw-semibold">Existing Conditions</label>
+              <div class="condition-checklist">
+                {% set selected_conditions = prefill.get('conditions', '').split(',') | map('trim') | list %}
+                {% for opt in condition_options %}
+                  <div class="form-check mb-1">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      name="conditions"
+                      value="{{ opt }}"
+                      id="cond_{{ loop.index }}"
+                      {% if opt in selected_conditions %}checked{% endif %}
+                    />
+                    <label class="form-check-label small" for="cond_{{ loop.index }}">{{ opt }}</label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Submit -->
+          <div class="d-flex align-items-center gap-3">
+            <button type="submit" class="btn btn-helix-primary btn-lg px-5" id="submit-btn">
+              <i class="bi bi-cpu me-2"></i>Run AI Assessment
+            </button>
+            <div class="d-none assessment-spinner" id="loading-spinner">
+              <div class="spinner-border spinner-border-sm text-helix-blue me-2" role="status">
+                <span class="visually-hidden">Analysing...</span>
+              </div>
+              <span class="text-muted small">IBM Granite is analysing your symptoms…</span>
+            </div>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column — info cards -->
+  <div class="col-12 col-lg-4">
+
+    <!-- How it works -->
+    <div class="card helix-card mb-4">
+      <div class="card-body p-4">
+        <h6 class="card-title mb-3">
+          <i class="bi bi-info-circle me-2 text-helix-blue"></i>How It Works
+        </h6>
+        <ol class="assessment-steps">
+          <li>
+            <span class="step-icon">1</span>
+            <span>Describe your symptoms in detail</span>
+          </li>
+          <li>
+            <span class="step-icon">2</span>
+            <span>Optionally add your age, gender, and conditions</span>
+          </li>
+          <li>
+            <span class="step-icon">3</span>
+            <span>IBM Granite analyses your input</span>
+          </li>
+          <li>
+            <span class="step-icon">4</span>
+            <span>Receive a structured triage assessment</span>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Powered by IBM -->
+    <div class="card helix-card border-0 assessment-ibm-card">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-cpu-fill text-helix-blue" style="font-size:1.1rem;"></i>
+          <h6 class="card-title mb-0">Powered by IBM Granite</h6>
+        </div>
+        <p class="text-muted small mb-2">
+          This assessment uses <strong>IBM Granite</strong> via <strong>IBM watsonx.ai Studio</strong>
+          — IBM's trusted enterprise AI foundation model.
+        </p>
+        <small class="text-muted">Model: <code>{{ model_id }}</code></small>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Character counter for the symptoms textarea
+  const textarea  = document.getElementById("symptoms");
+  const counter   = document.getElementById("char-count");
+  const form      = document.getElementById("assessment-form");
+  const submitBtn = document.getElementById("submit-btn");
+  const spinner   = document.getElementById("loading-spinner");
+
+  function updateCounter() {
+    const len = textarea.value.length;
+    counter.textContent = `${len} / 2000`;
+    counter.style.color = len > 1800 ? "var(--bs-danger)" : "";
+  }
+
+  textarea.addEventListener("input", updateCounter);
+  updateCounter();
+
+  // Show spinner on submit
+  form.addEventListener("submit", (e) => {
+    if (!textarea.value.trim()) return; // let HTML5 validation handle empty
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analysing…';
+    spinner.classList.remove("d-none");
+  });
+</script>
+{% endblock %}

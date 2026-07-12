@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Knowledge Base{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Knowledge Base</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-gray-800">
+      <i class="bi bi-journal-medical text-primary me-2"></i>Medical Knowledge Base
+    </h2>
+  </div>
+
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <form method="GET" action="{{ url_for('rag.index') }}" class="mb-4">
+        <div class="input-group input-group-lg">
+          <input type="text" name="q" class="form-control" placeholder="Search medical conditions, treatments, or guidelines..." value="{{ query }}" required>
+          <button class="btn btn-primary" type="submit">
+            <i class="bi bi-search me-1"></i> Search
+          </button>
+        </div>
+      </form>
+
+      {% if query %}
+        <h5 class="mb-3">Results for "{{ query }}"</h5>
+        
+        {% if error %}
+          <div class="alert alert-danger shadow-sm">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
+          </div>
+        {% elif answer %}
+          <div class="card bg-light border-primary mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white py-2">
+              <i class="bi bi-robot me-2"></i> AI Assistant Answer
+            </div>
+            <div class="card-body">
+              <p class="mb-2" style="white-space: pre-wrap;">{{ answer }}</p>
+              <hr>
+              <div class="small text-muted">
+                <i class="bi bi-info-circle me-1"></i> <strong>Disclaimer:</strong> This information is for educational purposes only and is not medical advice. Always consult a healthcare professional.
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        
+        {% if results %}
+          <h6 class="text-muted mb-3"><i class="bi bi-journal-bookmark me-2"></i>Sources</h6>
+          <div class="list-group">
+            {% for result in results %}
+              <div class="list-group-item list-group-item-action flex-column align-items-start mb-3 border rounded shadow-sm">
+                <div class="d-flex w-100 justify-content-between mb-2">
+                  <h5 class="mb-1 text-primary"><i class="bi bi-file-text me-2"></i>{{ result.title }}</h5>
+                  <small class="badge bg-secondary rounded-pill">Score: {{ result.relevance_score }}</small>
+                </div>
+                <p class="mb-1 text-dark">{{ result.text }}</p>
+                <div class="mt-2 text-muted small">
+                  <strong>Source:</strong> <span class="badge bg-info text-dark">{{ result.source }}</span> &nbsp;|&nbsp; 
+                  <strong>File:</strong> {{ result.filename }} &nbsp;|&nbsp;
+                  <strong>Chunk ID:</strong> {{ result.chunk_id[:8] }}...
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="alert alert-warning">
+            No relevant passages found for your query. Try different keywords.
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

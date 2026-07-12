@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block auth_content %}
+<div class="auth-card-container">
+
+  <!-- Brand header -->
+  <div class="auth-brand text-center mb-4">
+    <div class="auth-brand-icon mb-3">
+      <i class="bi bi-heart-pulse-fill"></i>
+    </div>
+    <h1 class="auth-brand-title">Helix AI</h1>
+    <p class="auth-brand-subtitle">Healthcare Companion</p>
+  </div>
+
+  <!-- Login card -->
+  <div class="card helix-card auth-card">
+    <div class="card-body p-4 p-md-5">
+
+      <h2 class="card-title mb-1">Welcome back</h2>
+      <p class="text-muted mb-4 small">Sign in to your Health Command Center</p>
+
+      <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label for="email" class="form-label fw-medium">Email address</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <i class="bi bi-envelope text-muted"></i>
+            </span>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control border-start-0 ps-0"
+              placeholder="you@example.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <label for="password" class="form-label fw-medium">Password</label>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <i class="bi bi-lock text-muted"></i>
+            </span>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control border-start-0 ps-0"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="input-group-text bg-light border-start-0 toggle-password"
+              data-target="password"
+              tabindex="-1"
+              title="Show/hide password"
+            >
+              <i class="bi bi-eye text-muted"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember me -->
+        <div class="mb-4 form-check">
+          <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me" />
+          <label class="form-check-label text-muted small" for="remember_me">Keep me signed in</label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-helix-primary w-100 btn-lg">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+        </button>
+
+      </form>
+
+      <hr class="my-4" />
+      <p class="text-center text-muted small mb-0">
+        Don't have an account?
+        <a href="{{ url_for('auth.register') }}" class="link-helix fw-medium">Create one</a>
+      </p>
+
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <p class="text-center text-muted mt-3" style="font-size: 0.78rem; max-width: 360px; margin: 0 auto;">
+    <i class="bi bi-shield-check me-1"></i>
+    Helix AI is for informational purposes only and does not provide medical advice.
+  </p>
+
+</div>
+{% endblock %}

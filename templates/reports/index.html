@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}AI Health Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-0 text-gray-800">
+        <i class="bi bi-file-earmark-medical text-primary me-2"></i>AI Health Reports
+      </h1>
+      <p class="text-muted mt-2">Generate and view your structured historical health reports.</p>
+    </div>
+    <div>
+      <form action="{{ url_for('reports.generate') }}" method="POST">
+        <button type="submit" class="btn btn-primary shadow-sm">
+          <i class="bi bi-plus-lg me-1"></i> Generate New Report
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card helix-card">
+    <div class="card-header bg-transparent py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Report History</h6>
+    </div>
+    <div class="card-body">
+      {% if reports %}
+        <div class="list-group list-group-flush">
+          {% for r in reports %}
+          <a href="{{ url_for('reports.view', report_id=r.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+            <div>
+              <h6 class="mb-1 fw-bold">Health Report - {{ r.generated_at | format_ist }}</h6>
+              <small class="text-muted">
+                Risk Classification at time of report: 
+                <span class="badge bg-{{ 'danger' if r.risk_classification in ['High', 'Critical'] else ('warning text-dark' if r.risk_classification == 'Moderate' else 'success') }}">
+                  {{ r.risk_classification }}
+                </span>
+              </small>
+            </div>
+            <i class="bi bi-chevron-right text-muted"></i>
+          </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-5">
+          <i class="bi bi-folder2-open display-4 text-muted mb-3"></i>
+          <p class="text-muted">No reports generated yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

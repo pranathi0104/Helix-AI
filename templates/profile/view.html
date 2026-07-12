@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}My Health Profile{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Profile</li>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="page-header mb-4">
+  <div>
+    <h1 class="page-title">My Health Profile</h1>
+    <p class="page-subtitle">Your demographic and health baseline information.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="{{ url_for('profile.edit') }}" class="btn btn-helix-primary">
+      <i class="bi bi-pencil me-2"></i>Edit Profile
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- Personal details -->
+  <div class="col-12 col-md-6">
+    <div class="card helix-card">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-3">
+          <i class="bi bi-person-circle me-2 text-helix-blue"></i>Personal Details
+        </h5>
+        <dl class="profile-dl">
+          <dt>Full Name</dt>
+          <dd>{{ profile.full_name or '—' }}</dd>
+
+          <dt>Age</dt>
+          <dd>{{ profile.age or '—' }}</dd>
+
+          <dt>Gender</dt>
+          <dd>{{ profile.gender or '—' }}</dd>
+
+          <dt>Blood Group</dt>
+          <dd>
+            {% if profile.blood_group and profile.blood_group != 'Unknown' %}
+              <span class="badge helix-condition-badge">{{ profile.blood_group }}</span>
+            {% else %}
+              —
+            {% endif %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Physical measurements -->
+  <div class="col-12 col-md-6">
+    <div class="card helix-card">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-3">
+          <i class="bi bi-rulers me-2 text-helix-green"></i>Physical Measurements
+        </h5>
+        <dl class="profile-dl">
+          <dt>Height</dt>
+          <dd>{{ (profile.height_cm | string + ' cm') if profile.height_cm else '—' }}</dd>
+
+          <dt>Weight</dt>
+          <dd>{{ (profile.weight_kg | string + ' kg') if profile.weight_kg else '—' }}</dd>
+
+          <dt>BMI</dt>
+          <dd>
+            {% if profile.bmi %}
+              <strong>{{ profile.bmi }}</strong>
+              {% set cat = profile.bmi %}
+              {% if cat < 18.5 %}
+                <span class="badge bg-warning text-dark ms-2">Underweight</span>
+              {% elif cat < 25 %}
+                <span class="badge bg-success ms-2">Normal</span>
+              {% elif cat < 30 %}
+                <span class="badge bg-warning text-dark ms-2">Overweight</span>
+              {% else %}
+                <span class="badge bg-danger ms-2">Obese</span>
+              {% endif %}
+            {% else %}
+              —
+            {% endif %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conditions -->
+  <div class="col-12 col-md-6">
+    <div class="card helix-card">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-3">
+          <i class="bi bi-heart-pulse me-2 text-danger"></i>Existing Conditions
+        </h5>
+        {% if profile.conditions_list %}
+          <div class="d-flex flex-wrap gap-2">
+            {% for condition in profile.conditions_list %}
+              <span class="badge helix-condition-badge fs-6">{{ condition }}</span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted">No conditions registered.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Lifestyle -->
+  <div class="col-12 col-md-6">
+    <div class="card helix-card">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-3">
+          <i class="bi bi-activity me-2 text-helix-purple"></i>Lifestyle Factors
+        </h5>
+        <dl class="profile-dl">
+          <dt>Smoking</dt>
+          <dd>
+            {% if profile.smoking %}
+              <span class="badge bg-danger">Yes</span>
+            {% else %}
+              <span class="badge bg-success">No</span>
+            {% endif %}
+          </dd>
+          <dt>Alcohol</dt>
+          <dd>
+            {% if profile.alcohol %}
+              <span class="badge bg-warning text-dark">Yes</span>
+            {% else %}
+              <span class="badge bg-success">No</span>
+            {% endif %}
+          </dd>
+          <dt>Exercise</dt>
+          <dd>{{ profile.exercise_frequency | capitalize }}</dd>
+          <dt>Diet Quality</dt>
+          <dd>{{ profile.diet_quality | capitalize }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Info notice -->
+<div class="alert alert-info border-0 bg-helix-blue-light mt-4">
+  <i class="bi bi-info-circle me-2 text-helix-blue"></i>
+  <span class="text-helix-blue small">
+    Your profile information will be used by AI agents in future milestones to personalise health assessments, risk predictions, and recommendations.
+  </span>
+</div>
+
+{% endblock %}

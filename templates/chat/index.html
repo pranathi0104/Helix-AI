@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Helix AI Assistant{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">AI Assistant</li>
+{% endblock %}
+
+{% block content %}
+<div class="row h-100">
+  <div class="col-12 col-lg-10 mx-auto d-flex flex-column" style="height: calc(100vh - 200px); min-height: 500px;">
+    
+    <!-- Chat Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0 fs-4 fw-semibold text-dark">
+        <i class="bi bi-robot text-primary me-2"></i> Helix AI Assistant
+      </h2>
+      <button id="btn-new-chat" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> New Chat
+      </button>
+    </div>
+
+    <!-- Chat Messages Window -->
+    <div class="card helix-card flex-grow-1 mb-3 shadow-sm d-flex flex-column overflow-hidden">
+      <div id="chat-window" class="card-body overflow-auto p-4 d-flex flex-column gap-3" style="background-color: #f8f9fa;">
+        
+        <!-- Welcome Message -->
+        <div class="d-flex w-100">
+          <div class="bg-white border rounded-3 p-3 shadow-sm" style="max-width: 85%;">
+            <div class="d-flex align-items-center mb-1">
+              <i class="bi bi-robot text-primary me-2"></i>
+              <strong class="text-dark small">Helix AI</strong>
+            </div>
+            <div class="text-secondary small">
+              Hello! I'm your Helix AI healthcare companion. How can I assist you with your health data today?
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Chat Input Area -->
+    <form id="chat-form" class="mt-auto position-relative">
+      <div class="input-group">
+        <input 
+          type="text" 
+          id="chat-input" 
+          class="form-control form-control-lg border-primary shadow-sm" 
+          placeholder="Ask about your vitals, risk, or lifestyle recommendations..." 
+          autocomplete="off"
+          required 
+        />
+        <button type="submit" id="btn-send" class="btn btn-primary px-4 shadow-sm">
+          <span id="send-text"><i class="bi bi-send"></i> Send</span>
+          <span id="send-loader" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+      </div>
+    </form>
+    
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const chatForm = document.getElementById("chat-form");
+    const chatInput = document.getElementById("chat-input");
+    const chatWindow = document.getElementById("chat-window");
+    const btnSend = document.getElementById("btn-send");
+    const sendText = document.getElementById("send-text");
+    const sendLoader = document.getElementById("send-loader");
+    const btnNewChat = document.getElementById("btn-new-chat");
+
+    let isProcessing = false;
+
+    // Helper: Scroll to bottom
+    function scrollToBottom() {
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    // Helper: Append User Message
+    function appendUserMessage(text) {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "d-flex w-100 justify-content-end user-message-wrapper";
+        msgDiv.innerHTML = `
+          <div class="bg-primary text-white rounded-3 p-3 shadow-sm" style="max-width: 85%;">
+            <div class="d-flex align-items-center justify-content-end mb-1">
+              <strong class="small text-white-50">You</strong>
+              <i class="bi bi-person-circle ms-2 text-white-50"></i>
+            </div>
+            <div class="small text-break">${escapeHtml(text)}</div>
+          </div>
+        `;
+        chatWindow.appendChild(msgDiv);
+        scrollToBottom();
+    }
+
+    // Helper: Append Assistant Message
+    function appendAssistantMessage(text, isError = false) {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "d-flex w-100 assistant-message-wrapper";
+        
+        let textColorClass = isError ? "text-danger" : "text-secondary";
+        let iconClass = isError ? "bi-exclamation-triangle text-danger" : "bi-robot text-primary";
+        let borderClass = isError ? "border-danger" : "border";
+
+        // Convert newlines to <br> for simple formatting
+        let formattedText = escapeHtml(text).replace(/\n/g, '<br>');
+
+        msgDiv.innerHTML = `
+          <div class="bg-white ${borderClass} rounded-3 p-3 shadow-sm" style="max-width: 85%;">
+            <div class="d-flex align-items-center mb-1">
+              <i class="bi ${iconClass} me-2"></i>
+              <strong class="text-dark small">Helix AI</strong>
+            </div>
+            <div class="${textColorClass} small">
+              ${formattedText}
+            </div>
+          </div>
+        `;
+        chatWindow.appendChild(msgDiv);
+        scrollToBottom();
+    }
+
+    // Helper: Escape HTML to prevent XSS
+    function escapeHtml(unsafe) {
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+
+    // Helper: Set Loading State
+    function setLoading(loading) {
+        isProcessing = loading;
+        chatInput.disabled = loading;
+        btnSend.disabled = loading;
+        btnNewChat.disabled = loading;
+        if (loading) {
+            sendText.classList.add("d-none");
+            sendLoader.classList.remove("d-none");
+        } else {
+            sendText.classList.remove("d-none");
+            sendLoader.classList.add("d-none");
+            chatInput.focus();
+        }
+    }
+
+    // Handle Form Submit
+    chatForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
+        if (isProcessing) return;
+        
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        // Append user message and clear input
+        appendUserMessage(message);
+        chatInput.value = "";
+        
+        setLoading(true);
+
+        try {
+            // Strictly send only the "message" string.
+            // NO IDENTIFIERS ARE PASSED FROM THE CLIENT.
+            const response = await fetch("/chat/message", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                appendAssistantMessage(data.error || "An unexpected error occurred.", true);
+            } else {
+                appendAssistantMessage(data.message || "No response received.");
+            }
+            
+        } catch (error) {
+            console.error("Chat API Error:", error);
+            appendAssistantMessage("Network error: Unable to communicate with the server. Please check your connection.", true);
+        } finally {
+            setLoading(false);
+        }
+    });
+
+    // Handle New Chat
+    btnNewChat.addEventListener("click", async function() {
+        if (isProcessing) return;
+        
+        if (!confirm("Are you sure you want to clear the conversation and start a new chat?")) return;
+        
+        setLoading(true);
+        
+        try {
+            const response = await fetch("/chat/clear", { method: "POST" });
+            if (response.ok) {
+                // Clear all messages except the welcome message
+                const messages = chatWindow.querySelectorAll('.user-message-wrapper, .assistant-message-wrapper');
+                messages.forEach(msg => msg.remove());
+                
+                // Show a quick transient notification
+                appendAssistantMessage("Conversation memory has been cleared. You are starting a fresh session.");
+            } else {
+                alert("Failed to clear conversation. Please refresh the page.");
+            }
+        } catch (error) {
+            console.error("Clear API Error:", error);
+            alert("Network error while trying to clear conversation.");
+        } finally {
+            setLoading(false);
+        }
+    });
+});
+</script>
+{% endblock %}

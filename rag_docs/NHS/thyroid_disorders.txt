@@ -1,0 +1,13 @@
+Thyroid disorders involve abnormal functioning of the thyroid gland, a small butterfly-shaped organ in the neck that produces hormones regulating the body's metabolism. 
+
+The two most common types are:
+- Hypothyroidism (underactive thyroid): The gland does not produce enough hormones. This slows down the body's metabolism.
+- Hyperthyroidism (overactive thyroid): The gland produces too much hormone, accelerating the body's metabolism.
+
+Symptoms of hypothyroidism often include fatigue, unexplained weight gain, feeling cold, dry skin, constipation, and muscle weakness. Symptoms of hyperthyroidism can include rapid weight loss, rapid or irregular heartbeat, nervousness, anxiety, sweating, and difficulty sleeping.
+
+Causes vary but often include autoimmune diseases (like Hashimoto's disease for hypothyroidism or Graves' disease for hyperthyroidism). Other causes include thyroid nodules, thyroiditis, or treatments for other thyroid conditions.
+
+Management typically involves blood tests to monitor hormone levels. Hypothyroidism is usually treated with daily hormone replacement medication. Hyperthyroidism may be treated with anti-thyroid medications, radioactive iodine, or surgery to slow or stop hormone production.
+
+Urgent medical care is needed if you experience a "thyroid storm" (a rare, life-threatening exacerbation of hyperthyroidism) characterized by a very high fever, extremely rapid heart rate, delirium, or severe agitation.

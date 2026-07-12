@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}Health Command Center{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Health Command Center</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+  <div>
+    <h1 class="page-title">Health Command Center</h1>
+    <p class="page-subtitle">
+      Welcome back, <strong>{{ profile.full_name.split()[0] if profile.full_name else user.username }}</strong>.
+      Here's your health overview for today.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <span class="badge helix-badge-date">
+      <i class="bi bi-calendar3 me-1"></i>
+      <span id="today-date"></span>
+    </span>
+  </div>
+</div>
+
+<!-- =========================================================================
+     ROW 1 — Health Score + Conditions + Today's Summary
+     ========================================================================= -->
+<div class="row g-4 mb-4">
+
+  <!-- Health Score card -->
+  <div class="col-12 col-md-4">
+    <div class="card helix-card h-100 health-score-card">
+      <div class="card-body text-center d-flex flex-column align-items-center justify-content-center p-4">
+        {% set score = risk_data.score if risk_data else 0 %}
+        {% set classification = risk_data.classification if risk_data else 'Unknown' %}
+        
+        {% if classification == 'Critical' %}
+          {% set theme_color = 'darkred' %}
+        {% elif classification == 'High' %}
+          {% set theme_color = 'var(--bs-danger)' %}
+        {% elif classification == 'Moderate' %}
+          {% set theme_color = 'var(--bs-warning)' %}
+        {% else %}
+          {% set theme_color = 'var(--bs-success)' %}
+        {% endif %}
+        
+        <div class="score-ring mb-3">
+          <svg viewBox="0 0 120 120" class="score-svg">
+            <circle class="score-track" cx="60" cy="60" r="52"/>
+            <circle class="score-fill" cx="60" cy="60" r="52"
+                    stroke-dasharray="326.73" 
+                    style="stroke-dashoffset: {{ 326.73 - (326.73 * (score / 100)) }}; stroke: {{ theme_color }}; transition: stroke-dashoffset 1s ease-out;"/>
+          </svg>
+          <div class="score-value-overlay">
+            <span class="score-number" style="color: {{ theme_color }};">{{ score }}</span>
+          </div>
+        </div>
+        <h5 class="card-title mb-1">Health Score</h5>
+        <p class="card-text text-muted small mb-3">Based on your latest vitals</p>
+        <span class="badge text-white border-0" style="background-color: {{ theme_color }};">
+          {{ classification }} Risk
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Health Status (Active Concerns) -->
+  <div class="col-12 col-md-4">
+    <div class="card helix-card h-100">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="card-icon-header mb-3">
+          <div class="card-icon bg-danger bg-opacity-10">
+            <i class="bi bi-heart-pulse-fill text-danger"></i>
+          </div>
+          <h5 class="card-title mb-0">Health Status</h5>
+        </div>
+        
+        <div class="flex-grow-1 overflow-auto" style="max-height: 200px;">
+          <!-- Active Concerns from Risk Data -->
+          {% set factors = risk_data.factors if risk_data else [] %}
+          {% if factors %}
+            <div class="d-flex flex-column gap-2 mb-3">
+              {% for factor in factors %}
+                <div class="d-flex align-items-center p-2 rounded bg-danger bg-opacity-10 border border-danger border-opacity-25">
+                  <i class="bi bi-exclamation-circle-fill text-danger me-2 small"></i>
+                  <span class="small fw-medium text-danger">{{ factor }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted small mb-3">No active health concerns detected from your latest readings.</p>
+          {% endif %}
+          
+          <!-- Profile Conditions -->
+          {% set conditions = profile.conditions_list if profile else [] %}
+          {% if conditions %}
+            <h6 class="small text-muted text-uppercase mb-2 mt-3" style="font-size: 0.7rem; letter-spacing: 0.5px;">Underlying Conditions</h6>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              {% for condition in conditions %}
+                <span class="badge bg-light text-secondary border">
+                  {{ condition }}
+                </span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's Summary -->
+  <div class="col-12 col-md-4">
+    <div class="card helix-card h-100">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="card-icon-header mb-3">
+          <div class="card-icon bg-helix-green-light">
+            <i class="bi bi-sun text-helix-green"></i>
+          </div>
+          <h5 class="card-title mb-0">Today's Summary</h5>
+        </div>
+        
+        <div class="flex-grow-1 d-flex flex-column justify-content-center">
+          <p class="text-dark small mb-3" style="line-height: 1.6;">
+            {{ todays_summary }}
+          </p>
+        </div>
+        
+        <div class="mt-auto pt-3 text-center border-top">
+          <a href="{{ url_for('reports.index') }}" class="btn btn-sm btn-outline-helix w-100">
+            <i class="bi bi-file-earmark-medical me-1"></i>View Full Report
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- =========================================================================
+     ROW 2 — Live vitals quick-stats
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+
+  <!-- Blood Pressure -->
+  <div class="col-6 col-xl-3">
+    <a href="{{ url_for('monitoring.index') }}" class="text-decoration-none">
+    <div class="card helix-card stat-card">
+      <div class="card-body p-3 d-flex align-items-center gap-3">
+        <div class="stat-icon-wrap bg-helix-red-light">
+          <i class="bi bi-activity text-danger"></i>
+        </div>
+        <div>
+          <p class="stat-label text-muted mb-0">Blood Pressure</p>
+          {% if latest_vitals and latest_vitals.systolic_bp %}
+            <p class="stat-value mb-0">{{ latest_vitals.systolic_bp }}/{{ latest_vitals.diastolic_bp }}</p>
+            <span class="stat-badge badge bg-{{ vitals_status.blood_pressure.css }} text-white">{{ vitals_status.blood_pressure.label }}</span>
+          {% else %}
+            <p class="stat-value mb-0 text-muted">— / —</p>
+            <span class="stat-badge">mmHg</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    </a>
+  </div>
+
+  <!-- Blood Sugar -->
+  <div class="col-6 col-xl-3">
+    <a href="{{ url_for('monitoring.index') }}" class="text-decoration-none">
+    <div class="card helix-card stat-card">
+      <div class="card-body p-3 d-flex align-items-center gap-3">
+        <div class="stat-icon-wrap bg-helix-purple-light">
+          <i class="bi bi-droplet-half text-helix-purple"></i>
+        </div>
+        <div>
+          <p class="stat-label text-muted mb-0">Blood Sugar</p>
+          {% if latest_vitals and latest_vitals.blood_sugar %}
+            <p class="stat-value mb-0">{{ latest_vitals.blood_sugar }}</p>
+            <span class="stat-badge badge bg-{{ vitals_status.blood_sugar.css }} text-white">{{ vitals_status.blood_sugar.label }}</span>
+          {% else %}
+            <p class="stat-value mb-0 text-muted">—</p>
+            <span class="stat-badge">mg/dL</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    </a>
+  </div>
+
+  <!-- Heart Rate -->
+  <div class="col-6 col-xl-3">
+    <a href="{{ url_for('monitoring.index') }}" class="text-decoration-none">
+    <div class="card helix-card stat-card">
+      <div class="card-body p-3 d-flex align-items-center gap-3">
+        <div class="stat-icon-wrap bg-helix-pink-light">
+          <i class="bi bi-heart-pulse text-danger"></i>
+        </div>
+        <div>
+          <p class="stat-label text-muted mb-0">Heart Rate</p>
+          {% if latest_vitals and latest_vitals.heart_rate %}
+            <p class="stat-value mb-0">{{ latest_vitals.heart_rate }}</p>
+            <span class="stat-badge badge bg-{{ vitals_status.heart_rate.css }} text-white">{{ vitals_status.heart_rate.label }}</span>
+          {% else %}
+            <p class="stat-value mb-0 text-muted">—</p>
+            <span class="stat-badge">bpm</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    </a>
+  </div>
+
+  <!-- Weight -->
+  <div class="col-6 col-xl-3">
+    <a href="{{ url_for('monitoring.index') }}" class="text-decoration-none">
+    <div class="card helix-card stat-card">
+      <div class="card-body p-3 d-flex align-items-center gap-3">
+        <div class="stat-icon-wrap bg-helix-blue-light">
+          <i class="bi bi-person-standing text-helix-blue"></i>
+        </div>
+        <div>
+          <p class="stat-label text-muted mb-0">Weight</p>
+          {% if latest_vitals and latest_vitals.weight %}
+            <p class="stat-value mb-0">{{ latest_vitals.weight }}</p>
+            <span class="stat-badge">kg</span>
+          {% else %}
+            <p class="stat-value mb-0 text-muted">—</p>
+            <span class="stat-badge">kg</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    </a>
+  </div>
+
+</div>
+
+<!-- =========================================================================
+     ROW 3 — Module navigation cards
+     ========================================================================= -->
+<h2 class="section-heading mb-3">
+  <i class="bi bi-grid me-2 text-helix-blue"></i>Clinical Modules
+</h2>
+
+<div class="row g-4 mb-4">
+
+  <!-- AI Clinical Assessment -->
+  <div class="col-12 col-md-6 col-xl-3">
+    <a href="{{ url_for('assessment.index') }}" class="text-decoration-none">
+      <div class="card helix-card module-card h-100">
+        <div class="card-body p-4">
+          <div class="module-icon-wrap mb-3 bg-helix-blue-light">
+            <i class="bi bi-clipboard2-pulse text-helix-blue"></i>
+          </div>
+          <h5 class="card-title">AI Clinical Assessment</h5>
+          <p class="card-text text-muted small">
+            Describe your symptoms and receive AI-powered triage with emergency detection.
+          </p>
+          <div class="module-footer mt-3">
+            <span class="badge helix-milestone-badge">Milestone 3</span>
+            <i class="bi bi-arrow-right-circle module-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Chronic Disease Monitoring -->
+  <div class="col-12 col-md-6 col-xl-3">
+    <a href="{{ url_for('monitoring.index') }}" class="text-decoration-none">
+      <div class="card helix-card module-card h-100">
+        <div class="card-body p-4">
+          <div class="module-icon-wrap mb-3 bg-helix-green-light">
+            <i class="bi bi-heart-pulse text-helix-green"></i>
+          </div>
+          <h5 class="card-title">Chronic Disease Monitoring</h5>
+          <p class="card-text text-muted small">
+            Track vitals, view trends, and receive AI-generated health narratives.
+          </p>
+          <div class="module-footer mt-3">
+            <span class="badge helix-milestone-badge">Milestone 3</span>
+            <i class="bi bi-arrow-right-circle module-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Treatment Companion -->
+  <div class="col-12 col-md-6 col-xl-3">
+    <a href="{{ url_for('treatment.index') }}" class="text-decoration-none">
+      <div class="card helix-card module-card h-100">
+        <div class="card-body p-4">
+          <div class="module-icon-wrap mb-3 bg-helix-purple-light">
+            <i class="bi bi-capsule text-helix-purple"></i>
+          </div>
+          <h5 class="card-title">Treatment Companion</h5>
+          <p class="card-text text-muted small">
+            Manage medications, track adherence, and receive RAG-powered safety notes.
+          </p>
+          <div class="module-footer mt-3">
+            <span class="badge helix-milestone-badge">Milestone 5</span>
+            <i class="bi bi-arrow-right-circle module-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Risk Prediction Agent -->
+  <div class="col-12 col-md-6 col-xl-3">
+    <a href="{{ url_for('risk.index') }}" class="text-decoration-none">
+      <div class="card helix-card module-card h-100">
+        <div class="card-body p-4">
+          <div class="module-icon-wrap mb-3 bg-danger bg-opacity-10">
+            <i class="bi bi-shield-exclamation text-danger"></i>
+          </div>
+          <h5 class="card-title">Risk Prediction Agent</h5>
+          <p class="card-text text-muted small">
+            Calculate your health risk score based on deterministic analysis of recent vitals.
+          </p>
+          <div class="module-footer mt-3">
+            <span class="badge helix-milestone-badge">Milestone 4</span>
+            <i class="bi bi-arrow-right-circle module-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Lifestyle Recommendation Agent -->
+  <div class="col-12 col-md-6 col-xl-3">
+    <a href="{{ url_for('lifestyle.index') }}" class="text-decoration-none">
+      <div class="card helix-card module-card h-100">
+        <div class="card-body p-4">
+          <div class="module-icon-wrap mb-3 bg-success bg-opacity-10">
+            <i class="bi bi-heart-pulse text-success"></i>
+          </div>
+          <h5 class="card-title">Lifestyle Recommendation Agent</h5>
+          <p class="card-text text-muted small">
+            Deterministic personalized guidance for your nutrition, sleep, and physical activity.
+          </p>
+          <div class="module-footer mt-3">
+            <span class="badge helix-milestone-badge">Milestone 5</span>
+            <i class="bi bi-arrow-right-circle module-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Knowledge Base -->
+  <div class="col-12 col-md-6 col-xl-3">
+    <a href="{{ url_for('rag.index') }}" class="text-decoration-none">
+      <div class="card helix-card module-card h-100">
+        <div class="card-body p-4">
+          <div class="module-icon-wrap mb-3 bg-helix-blue-light">
+            <i class="bi bi-journal-medical text-helix-blue"></i>
+          </div>
+          <h5 class="card-title">Knowledge Base</h5>
+          <p class="card-text text-muted small">
+            Search trusted medical sources using RAG semantic retrieval.
+          </p>
+          <div class="module-footer mt-3">
+            <span class="badge helix-milestone-badge">Milestone 5</span>
+            <i class="bi bi-arrow-right-circle module-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- AI Health Reports -->
+  <div class="col-12 col-md-6 col-xl-3">
+    <a href="{{ url_for('reports.index') }}" class="text-decoration-none">
+      <div class="card helix-card module-card h-100">
+        <div class="card-body p-4">
+          <div class="module-icon-wrap mb-3 bg-helix-amber-light">
+            <i class="bi bi-file-earmark-medical text-helix-amber"></i>
+          </div>
+          <h5 class="card-title">AI Health Reports</h5>
+          <p class="card-text text-muted small">
+            Generate comprehensive health reports with IBM Granite narrative and PDF export.
+          </p>
+          <div class="module-footer mt-3">
+            <span class="badge helix-milestone-badge">Milestone 7</span>
+            <i class="bi bi-arrow-right-circle module-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+</div>
+
+<!-- =========================================================================
+     ROW 4 — Health Timeline + AI Architecture overview
+     ========================================================================= -->
+<div class="row g-4 mb-2">
+
+  <!-- Health Timeline — live from Milestone 3 -->
+  <div class="col-12 col-lg-7">
+    <div class="card helix-card">
+      <div class="card-body p-4">
+        <div class="card-icon-header mb-3">
+          <div class="card-icon bg-helix-blue-light">
+            <i class="bi bi-clock-history text-helix-blue"></i>
+          </div>
+          <h5 class="card-title mb-0">Health Timeline</h5>
+        </div>
+        {% if timeline %}
+          <ul class="timeline-list">
+            {% for event in timeline %}
+            <li class="timeline-item">
+              <span class="timeline-dot
+                {% if event.event_type == 'alert' %}bg-danger
+                {% elif event.event_type == 'vitals' %}bg-success
+                {% elif event.event_type == 'symptom_emergency' %}bg-danger
+                {% elif event.event_type == 'symptom' %}bg-helix-blue
+                {% else %}bg-secondary{% endif %}">
+              </span>
+              <div class="timeline-content">
+                <p class="timeline-summary mb-0">{{ event.event_summary }}</p>
+                <small class="text-muted">{{ event.event_date | format_ist }}</small>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          <div class="mt-2 text-end">
+            <a href="{{ url_for('monitoring.history') }}" class="small link-helix">
+              View all vitals history →
+            </a>
+          </div>
+        {% else %}
+          <div class="timeline-placeholder text-center py-3">
+            <i class="bi bi-clock" style="font-size: 2.5rem; color: var(--helix-border);"></i>
+            <p class="text-muted mt-3 mb-1 small">No health events yet.</p>
+            <a href="{{ url_for('monitoring.add') }}" class="btn btn-sm btn-outline-helix mt-1">
+              <i class="bi bi-plus-lg me-1"></i>Log First Vitals
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Agent architecture overview -->
+  <div class="col-12 col-lg-5">
+    <div class="card helix-card h-100">
+      <div class="card-body p-4">
+        <div class="card-icon-header mb-3">
+          <div class="card-icon bg-helix-purple-light">
+            <i class="bi bi-diagram-3 text-helix-purple"></i>
+          </div>
+          <h5 class="card-title mb-0">AI Agent Architecture</h5>
+        </div>
+        <p class="text-muted small mb-3">
+          Helix AI will be powered by a multi-agent system orchestrated by IBM watsonx Orchestrate.
+        </p>
+        <ul class="agent-list">
+          <li><i class="bi bi-circle-fill text-helix-blue me-2"></i>Symptom Assessment Agent <span class="text-muted">(M3)</span></li>
+          <li><i class="bi bi-circle-fill text-helix-green me-2"></i>Chronic Disease Agent <span class="text-muted">(M3)</span></li>
+          <li><i class="bi bi-circle-fill text-helix-purple me-2"></i>Risk Prediction Agent <span class="text-muted">(M4)</span></li>
+          <li><i class="bi bi-circle-fill text-helix-amber me-2"></i>Treatment Companion Agent <span class="text-muted">(M5)</span></li>
+          <li><i class="bi bi-circle-fill" style="color: var(--helix-teal)"></i><span class="ms-2">Lifestyle Recommendation Agent <span class="text-muted">(M5)</span></span></li>
+          <li><i class="bi bi-circle-fill text-secondary me-2"></i>RAG Knowledge Agent <span class="text-muted">(M5)</span></li>
+          <li><i class="bi bi-circle-fill text-danger me-2"></i>Health Report Generator <span class="text-muted">(M7)</span></li>
+        </ul>
+        <div class="mt-3 pt-2 border-top">
+          <small class="text-muted">
+            <i class="bi bi-cpu me-1 text-helix-blue"></i>
+            Powered by <strong>IBM Granite</strong> · <strong>watsonx Orchestrate</strong> · <strong>RAG</strong>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Display today's date in the header badge
+  document.getElementById("today-date").textContent =
+    new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+</script>
+{% endblock %}

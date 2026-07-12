@@ -1,0 +1,165 @@
+openapi: 3.0.3
+info:
+  title: Helix AI Orchestrate Tools API
+  description: Secure read-only API for IBM watsonx Orchestrate agents to retrieve patient health context from Helix AI.
+  version: 1.0.0
+servers:
+  - url: https://creativity-render-intervention-planet.trycloudflare.com/api/v1/orchestrate
+    description:  Helix AI secure Orchestrate API
+
+security:
+  - bearerAuth: []
+
+paths:
+  /patient/{user_id}/vitals:
+    get:
+      summary: Get Patient Vitals
+      operationId: get_patient_vitals
+      description: Retrieve the latest clinical vitals for a specific patient.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the patient
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized - Missing API Key
+        '403':
+          description: Forbidden - Invalid API Key
+        '404':
+          description: Patient not found or no vitals available
+
+  /patient/{user_id}/vitals/trends:
+    get:
+      summary: Get Vital Trends
+      operationId: get_vital_trends
+      description: Retrieve the last 30 days of vital records formatted as trends for a specific patient.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the patient
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /patient/{user_id}/risk:
+    get:
+      summary: Get Patient Risk
+      operationId: get_patient_risk
+      description: Calculate and retrieve the deterministic health risk classification for a patient.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the patient
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /patient/{user_id}/lifestyle:
+    get:
+      summary: Get Lifestyle Recommendations
+      operationId: get_lifestyle_recommendations
+      description: Retrieve lifestyle recommendations for a patient based on their profile.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the patient
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /patient/{user_id}/treatment:
+    get:
+      summary: Get Treatment Information
+      operationId: get_treatment_information
+      description: Retrieve current active medications and treatment adherence percentage for a patient.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the patient
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /patient/{user_id}/report:
+    get:
+      summary: Get Health Report Snapshot
+      operationId: get_health_report_snapshot
+      description: Retrieve the latest aggregated deterministic health report snapshot for a patient.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the patient
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /patient/{user_id}/bmi:
+    get:
+      summary: Calculate BMI
+      operationId: calculate_bmi
+      description: Calculate Body Mass Index (BMI) using a patient's saved profile.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the patient
+      responses:
+        '200':
+          description: Successful retrieval
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: API Key required to authenticate requests from watsonx Orchestrate.

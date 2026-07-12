@@ -1,0 +1,11 @@
+Cancer is a group of diseases characterized by the uncontrolled growth and spread of abnormal cells. Instead of following normal biological signals to stop dividing, specialize, or die, these cells continue to multiply uncontrollably. They can invade surrounding tissues and spread to other parts of the body through the blood and lymph systems.
+
+Cancer is fundamentally a genetic disease. It is caused by changes (mutations) to DNA that control how our cells function, grow, and divide. These changes can be inherited from parents, arise from environmental exposures (such as radiation or tobacco smoke), or occur as a result of errors that happen naturally when cells divide. Typically, these genetic changes accumulate as we age.
+
+While the body's immune system can often detect and attack these abnormal cells, some cancer cells are able to avoid detection or resist immune system attacks. Cancer is not a single disease, but a collection of many different diseases (e.g., breast cancer, lung cancer, colorectal cancer).
+
+Common symptoms vary widely depending on the type of cancer but can include unexplained weight loss, fatigue, persistent pain, skin changes, or unusual bleeding. 
+
+General prevention involves maintaining a healthy lifestyle, avoiding tobacco, limiting alcohol, protecting skin from the sun, and getting recommended screenings.
+
+Urgent medical care may be needed if you experience sudden, severe symptoms such as coughing up blood, a rapidly growing lump, or severe unexplained pain. Treatment options vary and may include surgery, chemotherapy, radiation therapy, and immunotherapy, which help the immune system better identify and eliminate cancer cells.

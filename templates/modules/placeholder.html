@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meta.title }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">{{ meta.title }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <div class="card-icon card-icon-lg bg-helix-blue-light">
+      <i class="bi {{ meta.icon }} text-helix-blue" style="font-size: 1.5rem;"></i>
+    </div>
+    <div>
+      <h1 class="page-title mb-0">{{ meta.title }}</h1>
+      <p class="page-subtitle mb-0">
+        Planned for <strong>{{ meta.milestone }}</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Coming soon card -->
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+
+    <div class="card helix-card mb-4">
+      <div class="card-body text-center p-5">
+        <div class="placeholder-module-icon mb-4">
+          <i class="bi {{ meta.icon }}"></i>
+        </div>
+        <h2 class="h3 mb-3">{{ meta.title }}</h2>
+        <p class="text-muted mb-4 lead" style="font-size: 1rem;">
+          {{ meta.description }}
+        </p>
+        <div class="milestone-badge-lg mb-4">
+          <i class="bi bi-hourglass-split me-2"></i>
+          This module will be implemented in <strong>{{ meta.milestone }}</strong>
+        </div>
+        <a href="{{ url_for('dashboard.home') }}" class="btn btn-helix-primary">
+          <i class="bi bi-grid me-2"></i>Return to Health Command Center
+        </a>
+      </div>
+    </div>
+
+    <!-- Planned features card -->
+    <div class="card helix-card">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-3">
+          <i class="bi bi-list-check me-2 text-helix-blue"></i>Planned Features
+        </h5>
+        <ul class="feature-list">
+          {% for feature in meta.features %}
+          <li>
+            <span class="feature-check"><i class="bi bi-check2-circle"></i></span>
+            <span>{{ feature }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+
+        <div class="alert alert-info border-0 bg-helix-blue-light mt-4 mb-0">
+          <i class="bi bi-cpu me-2 text-helix-blue"></i>
+          <span class="text-helix-blue small">
+            This module will integrate <strong>IBM Granite</strong>, <strong>IBM watsonx.ai</strong>,
+            and <strong>watsonx Orchestrate</strong> for AI-powered functionality.
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
