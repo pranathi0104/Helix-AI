@@ -68,6 +68,11 @@ class ProductionConfig(Config):
         
     SQLALCHEMY_DATABASE_URI = _db_url
 
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
+
 
 # Map name strings to config classes for app factory use
 config_map = {
