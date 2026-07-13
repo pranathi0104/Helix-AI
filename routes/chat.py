@@ -81,12 +81,23 @@ def chat_message():
         severe_symptoms = [
             "chest pain",
             "difficulty breathing",
-            "shortness of breath"
+            "shortness of breath",
+            "loss of consciousness",
+            "unconscious",
+            "severe bleeding",
+            "sudden weakness",
+            "sudden numbness",
+            "facial drooping",
+            "difficulty speaking",
+            "severe sudden headache",
+            "seizure"
         ]
         if any(symptom in user_message_lower for symptom in severe_symptoms):
             is_severe = True
             
-        orchestrate_message = f"Provide a non-diagnostic educational symptom assessment for the following user concern. Explain possible causes using uncertainty language, provide safe general guidance, identify warning signs, and recommend appropriate medical evaluation. Never provide or claim a definitive diagnosis.\n\nUser concern: {user_message}"
+        orchestrate_message = f"Answer the user's symptom concern directly. Name relevant possible causes and conditions using uncertainty language. Provide concise safe guidance, identify warning signs, and recommend appropriate medical evaluation. Never claim a definitive diagnosis.\n\nUser concern: {user_message}"
+        if is_severe:
+            orchestrate_message += "\n\nSYSTEM NOTE: Severe symptom detected. Enforce emergency protocol: prioritize immediate emergency action, advise assisted transport or emergency services, and do not ask follow-up questions."
 
     ibm_api_key = current_app.config.get("IBM_API_KEY") or os.environ.get("IBM_API_KEY")
     orchestrate_url = os.environ.get("ORCHESTRATE_INSTANCE_URL")
@@ -208,12 +219,6 @@ def chat_message():
             current_app.logger.warning("Internal tool error detected in Orchestrate response. Returning safe fallback message.")
             final_message_text = "I’m unable to retrieve your health information right now. Please try again shortly."
                     
-        if is_diagnosis_request:
-            if is_severe:
-                disclaimer = "I cannot determine a diagnosis from symptoms alone. These symptoms can be potentially serious. Please seek urgent medical evaluation or emergency care. A qualified healthcare professional must assess the cause and provide appropriate treatment.\n\n"
-            else:
-                disclaimer = "I cannot determine a diagnosis from symptoms alone. A qualified healthcare professional must assess your symptoms, determine the cause, and provide appropriate treatment.\n\n"
-            final_message_text = disclaimer + final_message_text
 
         return jsonify({
             "message": final_message_text
