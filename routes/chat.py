@@ -63,6 +63,29 @@ def chat_message():
     if len(user_message) > 4000:
         return jsonify({"error": "Message exceeds the maximum length of 4000 characters."}), 400
 
+    # Deterministic diagnosis-intent intercept
+    user_message_lower = user_message.lower()
+    diagnosis_triggers = [
+        "what disease do i have",
+        "diagnose me",
+        "what condition do i have",
+        "what illness is this"
+    ]
+    if any(trigger in user_message_lower for trigger in diagnosis_triggers):
+        severe_symptoms = [
+            "chest pain",
+            "difficulty breathing",
+            "shortness of breath"
+        ]
+        if any(symptom in user_message_lower for symptom in severe_symptoms):
+            return jsonify({
+                "message": "I cannot determine a diagnosis from symptoms alone. These symptoms can be potentially serious. Please seek urgent medical evaluation or emergency care. A qualified healthcare professional must assess the cause and provide appropriate treatment."
+            }), 200
+        else:
+            return jsonify({
+                "message": "I cannot determine a diagnosis from symptoms alone. A qualified healthcare professional must assess your symptoms, determine the cause, and provide appropriate treatment."
+            }), 200
+
     ibm_api_key = current_app.config.get("IBM_API_KEY") or os.environ.get("IBM_API_KEY")
     orchestrate_url = os.environ.get("ORCHESTRATE_INSTANCE_URL")
     
