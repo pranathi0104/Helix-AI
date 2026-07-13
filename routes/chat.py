@@ -71,20 +71,22 @@ def chat_message():
         "what condition do i have",
         "what illness is this"
     ]
+    
+    is_diagnosis_request = False
+    is_severe = False
+    orchestrate_message = user_message
+
     if any(trigger in user_message_lower for trigger in diagnosis_triggers):
+        is_diagnosis_request = True
         severe_symptoms = [
             "chest pain",
             "difficulty breathing",
             "shortness of breath"
         ]
         if any(symptom in user_message_lower for symptom in severe_symptoms):
-            return jsonify({
-                "message": "I cannot determine a diagnosis from symptoms alone. These symptoms can be potentially serious. Please seek urgent medical evaluation or emergency care. A qualified healthcare professional must assess the cause and provide appropriate treatment."
-            }), 200
-        else:
-            return jsonify({
-                "message": "I cannot determine a diagnosis from symptoms alone. A qualified healthcare professional must assess your symptoms, determine the cause, and provide appropriate treatment."
-            }), 200
+            is_severe = True
+            
+        orchestrate_message = f"Provide a non-diagnostic educational symptom assessment for the following user concern. Explain possible causes using uncertainty language, provide safe general guidance, identify warning signs, and recommend appropriate medical evaluation. Never provide or claim a definitive diagnosis.\n\nUser concern: {user_message}"
 
     ibm_api_key = current_app.config.get("IBM_API_KEY") or os.environ.get("IBM_API_KEY")
     orchestrate_url = os.environ.get("ORCHESTRATE_INSTANCE_URL")
@@ -106,7 +108,7 @@ def chat_message():
         payload = {
             "message": {
                 "role": "user",
-                "content": user_message
+                "content": orchestrate_message
             },
             "capture_logs": False,
             "agent_id": SUPERVISOR_AGENT_ID,
@@ -206,6 +208,13 @@ def chat_message():
             current_app.logger.warning("Internal tool error detected in Orchestrate response. Returning safe fallback message.")
             final_message_text = "I’m unable to retrieve your health information right now. Please try again shortly."
                     
+        if is_diagnosis_request:
+            if is_severe:
+                disclaimer = "I cannot determine a diagnosis from symptoms alone. These symptoms can be potentially serious. Please seek urgent medical evaluation or emergency care. A qualified healthcare professional must assess the cause and provide appropriate treatment.\n\n"
+            else:
+                disclaimer = "I cannot determine a diagnosis from symptoms alone. A qualified healthcare professional must assess your symptoms, determine the cause, and provide appropriate treatment.\n\n"
+            final_message_text = disclaimer + final_message_text
+
         return jsonify({
             "message": final_message_text
         }), 200
