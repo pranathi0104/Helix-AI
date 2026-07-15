@@ -46,7 +46,7 @@ Helix AI operates on a sophisticated multi-agent system managed by IBM watsonx O
 - **Treatment Agent**: Answers questions regarding current active medications and tracks treatment adherence.
 - **Health Report Agent**: Synthesizes profile data, risk factors, and vitals into a cohesive, easily digestible health report snapshot.
 
-All agent responses are strictly grounded using **IBM watsonx.ai and the Granite LLM**, integrated with a robust **RAG (Retrieval-Augmented Generation)** medical knowledge base to ensure reliability and safety.
+Helix AI seamlessly combines IBM watsonx Orchestrate, IBM Granite foundation models, deterministic backend health logic, secure patient-data tools, and a robust RAG medical knowledge base to ensure reliability and safety.
 
 ---
 
@@ -143,7 +143,9 @@ pip install -r requirements.txt
 
 ### 4. Configure Environment Variables
 
-Copy `.env.example` to `.env`:
+To run this project locally, you must configure your environment variables. A template is provided in the repository.
+
+First, create a `.env` file in the project root by copying the provided example:
 
 ```bash
 # Windows
@@ -153,25 +155,29 @@ copy .env.example .env
 cp .env.example .env
 ```
 
-Edit `.env` to include your configuration placeholders. **Do not expose real API keys or secrets in version control.**
+Next, open the newly created `.env` file in your preferred text editor. You must provide your **own** valid credentials for IBM Cloud and watsonx to enable the AI functionality.
 
-```
-SECRET_KEY=your-secret-key
-IBM_API_KEY=your-ibm-api-key
-WATSONX_PROJECT_ID=your-watsonx-project-id
-WATSONX_URL=your-watsonx-url
-GRANITE_MODEL_ID=your-granite-model-id
-ORCHESTRATE_API_KEY=your-orchestrate-api-key
-ORCHESTRATE_INSTANCE_URL=your-orchestrate-url
-```
+Populate the `.env` file with the following variables:
+
+- `SECRET_KEY`: A secure, random string used by Flask for session encryption.
+- `IBM_API_KEY`: Your personal IBM Cloud API Key used to authenticate with IBM services.
+- `WATSONX_PROJECT_ID`: The unique identifier for your Watson Studio project.
+- `WATSONX_URL`: The API endpoint for your watsonx instance (e.g., `https://us-south.ml.cloud.ibm.com`).
+- `GRANITE_MODEL_ID`: The specific IBM Granite foundational model ID (e.g., `ibm/granite-3-1-8b-base`).
+- `ORCHESTRATE_API_KEY`: The API key provisioned for your IBM watsonx Orchestrate instance.
+- `ORCHESTRATE_INSTANCE_URL`: The base URL for your specific watsonx Orchestrate tenant.
+
+> **Security Notice**: Your `.env` file contains highly sensitive credentials. It is included in `.gitignore` by default. **Never** commit your `.env` file or expose your API keys in version control.
 
 ### 5. Run the Application Locally
+
+Once your environment is fully configured and the virtual environment is activated, you can start the local development server:
 
 ```bash
 python app.py
 ```
 
-The application will be available at: **http://localhost:5000**
+Upon successful startup, the Flask application will be accessible in your web browser at: **http://localhost:5000**
 
 ---
 
