@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 _vector_store = None
 _is_indexed = False
 _using_fallback = False
+_fallback_store = None
+_quota_exhausted = False
 
 def get_vector_store():
     global _vector_store, _using_fallback
@@ -145,28 +147,50 @@ def is_index_built() -> bool:
         _is_indexed = True
     return fresh
 
-def retrieve(query: str, top_k: int = 5) -> list:
+def get_fallback_store():
+    global _fallback_store
+    if _fallback_store is None:
+        logger.info("Initializing cached TF-IDF fallback store")
+        _fallback_store = InMemoryVectorStore(LocalMockEmbedder())
+        docs = load_documents()
+        from utils.text_chunker import TextChunker
+        chunker = TextChunker(chunk_size=500, chunk_overlap=50)
+        chunks = chunker.chunk_documents(docs)
+        _fallback_store.build_index(chunks)
+    return _fallback_store
+
+def retrieve(query: str, top_k: int = 5) -> tuple:
     """
     Retrieves the most relevant passages for the query.
+    Returns a tuple: (list_of_results, mode_string)
     """
+    global _using_fallback, _quota_exhausted
+
     if not is_index_built():
         build_index()
         
     store = get_vector_store()
+    
+    if _using_fallback:
+        return store.semantic_search(query, top_k=top_k, strict_topic_filtering=True), "fallback"
+        
+    if _quota_exhausted:
+        fallback = get_fallback_store()
+        return fallback.semantic_search(query, top_k=top_k, strict_topic_filtering=True), "fallback"
+        
     try:
-        return store.semantic_search(query, top_k=top_k)
+        return store.semantic_search(query, top_k=top_k), "semantic"
     except Exception as e:
         logger.error("Semantic search failed during retrieve: %s", e)
-        global _using_fallback, _vector_store, _is_indexed
-        if not _using_fallback:
-            # Fallback at retrieval time
-            logger.info("Falling back to TF-IDF search")
-            _vector_store = InMemoryVectorStore(LocalMockEmbedder())
-            _using_fallback = True
-            _is_indexed = False # Force rebuild of in-memory index
-            build_index()
-            return _vector_store.semantic_search(query, top_k=top_k)
-        return []
+        
+        if "token_quota_reached" in str(e):
+            logger.warning("IBM Watsonx token quota reached. Switching to fallback store.")
+            _quota_exhausted = True
+        else:
+            logger.warning("Unexpected error during semantic retrieval. Falling back temporarily.")
+            
+        fallback = get_fallback_store()
+        return fallback.semantic_search(query, top_k=top_k, strict_topic_filtering=True), "fallback"
 
 def format_context(retrieved_chunks: list) -> str:
     """

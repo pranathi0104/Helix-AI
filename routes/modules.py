@@ -73,4 +73,4 @@ def _render_module(key: str):
 @modules_bp.route("/settings")
 @login_required
 def settings():
-    return _render_module("settings")
+    return render_template("settings/index.html", title="Settings")

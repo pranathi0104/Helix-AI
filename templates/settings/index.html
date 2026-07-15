@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Settings</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-gray-800">
+      <i class="bi bi-gear text-primary me-2"></i>Settings
+    </h2>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+
+      <!-- Notifications -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 fw-bold text-primary"><i class="bi bi-bell me-2"></i>Notifications</h6>
+        </div>
+        <div class="card-body">
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input pref-toggle" type="checkbox" id="prefHealthAlerts" checked>
+            <label class="form-check-label fw-bold" for="prefHealthAlerts">Health Alerts</label>
+            <div class="form-text">Receive alerts for critical vital changes or symptom red flags.</div>
+          </div>
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input pref-toggle" type="checkbox" id="prefRiskAlerts" checked>
+            <label class="form-check-label fw-bold" for="prefRiskAlerts">Risk Alerts</label>
+            <div class="form-text">Notify me when my AI-calculated health risk score changes significantly.</div>
+          </div>
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input pref-toggle" type="checkbox" id="prefTreatmentReminders" checked>
+            <label class="form-check-label fw-bold" for="prefTreatmentReminders">Treatment Reminders</label>
+            <div class="form-text">Get reminders for medications and treatment plans.</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input pref-toggle" type="checkbox" id="prefReportNotifications" checked>
+            <label class="form-check-label fw-bold" for="prefReportNotifications">AI Report Notifications</label>
+            <div class="form-text">Be notified when a new comprehensive health report is generated.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Preferences -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 fw-bold text-primary"><i class="bi bi-robot me-2"></i>AI Preferences</h6>
+        </div>
+        <div class="card-body">
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input pref-toggle" type="checkbox" id="prefConciseAI">
+            <label class="form-check-label fw-bold" for="prefConciseAI">Concise AI Responses</label>
+            <div class="form-text">Instruct Helix AI to provide shorter, more direct answers.</div>
+          </div>
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input pref-toggle" type="checkbox" id="prefMedicalDisclaimers" checked>
+            <label class="form-check-label fw-bold" for="prefMedicalDisclaimers">Include Medical Disclaimers</label>
+            <div class="form-text">Append standard medical disclaimers to AI-generated insights.</div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input pref-toggle" type="checkbox" id="prefProactiveInsights" checked>
+            <label class="form-check-label fw-bold" for="prefProactiveInsights">Proactive Health Insights</label>
+            <div class="form-text">Allow the AI to suggest lifestyle improvements before you ask.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacy & Data -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 fw-bold text-danger"><i class="bi bi-shield-lock me-2"></i>Privacy & Data</h6>
+        </div>
+        <div class="card-body">
+          <p>Your settings and preferences on this page are stored securely in your browser's local storage. They are not transmitted to the server.</p>
+          <button class="btn btn-outline-danger mt-2" onclick="resetLocalPreferences()">
+            <i class="bi bi-trash me-2"></i>Reset Local Preferences
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Load Toggles
+    const toggles = document.querySelectorAll('.pref-toggle');
+    toggles.forEach(toggle => {
+      // Check localStorage for saved state
+      const savedState = localStorage.getItem(toggle.id);
+      if (savedState !== null) {
+        toggle.checked = (savedState === 'true');
+      }
+
+      // Save on change
+      toggle.addEventListener('change', (e) => {
+        localStorage.setItem(toggle.id, e.target.checked);
+      });
+    });
+  });
+
+  function resetLocalPreferences() {
+    if (confirm("Are you sure you want to reset all local UI preferences to their defaults?")) {
+      const keysToClear = [
+        'prefHealthAlerts', 'prefRiskAlerts', 'prefTreatmentReminders', 'prefReportNotifications',
+        'prefConciseAI', 'prefMedicalDisclaimers', 'prefProactiveInsights'
+      ];
+      keysToClear.forEach(key => localStorage.removeItem(key));
+      
+      // Reload page to re-apply defaults
+      window.location.reload();
+    }
+  }
+</script>
+{% endblock %}

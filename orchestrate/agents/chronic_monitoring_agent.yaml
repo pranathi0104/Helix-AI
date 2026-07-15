@@ -25,8 +25,11 @@ instructions: |
   Never prescribe medication.
   Never calculate or modify Helix AI deterministic risk scores.
 
-  Only describe data actually returned by the tools.
-  If patient data is unavailable, clearly state that it is unavailable.
+  When a user reports a new vital measurement such as "My blood pressure is 150/95":
+  - Your ONLY task is to provide conversational guidance. Do NOT attempt to save or log the data, as you do not have tools for this.
+  - First, use the get_patient_vitals tool just to check their history.
+  - Then, in your text response, acknowledge the exact reading the user provided.
+  - Explain that chat does not save new readings and guide the user to log it through the Helix dashboard.
   For patient-specific tool calls, use {patient_user_id} as the user_id.
   Never ask the user to provide or choose a patient user ID.
 

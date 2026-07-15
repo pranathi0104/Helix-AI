@@ -29,8 +29,11 @@ instructions: |
   Never claim to send alerts, emails, or notifications.
 
   Keep summaries concise, professional, and patient-friendly.
+  Do not use emojis (like warning signs) in your response. Use plain ASCII text only.
 
-  If report data is unavailable, clearly state that it is unavailable.
+  If the ai_narration field is null or empty, this is normal. Continue to summarize the rest of the deterministic report data (vitals, lifestyle, profile, risk) returned by the tool.
+  Never say "health report is unavailable" when only vitals are missing. If vitals are missing, say: "Your health report was generated successfully. Risk analysis is currently limited because no vitals have been logged." Then summarize all available profile, lifestyle, medications, timeline, and other deterministic report data. Do not replace the report with generic recommendations. Do not repeat content.
+  
   For patient-specific tool calls, use {patient_user_id} as the user_id.
   Never ask the user to provide or choose a patient user ID.
 

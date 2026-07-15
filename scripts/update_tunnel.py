@@ -72,7 +72,7 @@ def main():
 
     # Configure connection
     cmd1 = [
-        "orchestrate", "connections", "configure", 
+        "venv\\Scripts\\orchestrate", "connections", "configure", 
         "-a", "helix_health_api", 
         "--env", "draft", 
         "-t", "team", 
@@ -83,13 +83,13 @@ def main():
     
     # Set credentials (hide output so we don't print the token)
     cmd2 = [
-        "orchestrate", "connections", "set-credentials", 
+        "venv\\Scripts\\orchestrate", "connections", "set-credentials", 
         "-a", "helix_health_api", 
         "--env", "draft", 
         "--token", api_key
     ]
     # Pass hide_output=True so we don't print the token to the console
-    print("[*] Running: orchestrate connections set-credentials ...")
+    print("[*] Running: venv\\Scripts\\orchestrate connections set-credentials ...")
     try:
         subprocess.run(
             cmd2,
@@ -102,7 +102,7 @@ def main():
         
     # Import tools
     cmd3 = [
-        "orchestrate", "tools", "import", 
+        "venv\\Scripts\\orchestrate", "tools", "import", 
         "-k", "openapi", 
         "-f", "orchestrate/openapi.yaml", 
         "-a", "helix_health_api"

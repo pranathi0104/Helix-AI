@@ -25,69 +25,71 @@ def calculate_risk(user_id: int) -> dict:
     
     # Blood Pressure (Systolic)
     if latest.systolic_bp:
-        if latest.systolic_bp > 180:
+        if latest.systolic_bp >= 180:
             score += 30
-            factors.append("Critically High Systolic Blood Pressure (>180 mmHg)")
-        elif latest.systolic_bp > 140:
+            factors.append("Critically High Systolic Blood Pressure (>=180 mmHg)")
+        elif latest.systolic_bp >= 140:
             score += 15
-            factors.append("High Systolic Blood Pressure (>140 mmHg)")
-        elif latest.systolic_bp < 90:
+            factors.append("High Systolic Blood Pressure (>=140 mmHg)")
+        elif latest.systolic_bp <= 90:
             score += 10
-            factors.append("Low Systolic Blood Pressure (<90 mmHg)")
+            factors.append("Low Systolic Blood Pressure (<=90 mmHg)")
             
     # Blood Pressure (Diastolic)
     if latest.diastolic_bp:
-        if latest.diastolic_bp > 120:
+        if latest.diastolic_bp >= 120:
             score += 20
-            factors.append("Critically High Diastolic BP (>120 mmHg)")
-        elif latest.diastolic_bp > 90:
+            factors.append("Critically High Diastolic BP (>=120 mmHg)")
+        elif latest.diastolic_bp >= 90:
             score += 10
-            factors.append("High Diastolic BP (>90 mmHg)")
+            factors.append("High Diastolic BP (>=90 mmHg)")
             
     # Blood Sugar
     if latest.blood_sugar:
-        if latest.blood_sugar > 250:
+        if latest.blood_sugar >= 250:
             score += 25
-            factors.append("Dangerously High Blood Sugar (>250 mg/dL)")
-        elif latest.blood_sugar > 180:
+            factors.append("Dangerously High Blood Sugar (>=250 mg/dL)")
+        elif latest.blood_sugar >= 180:
             score += 10
-            factors.append("Elevated Blood Sugar (>180 mg/dL)")
-        elif latest.blood_sugar < 70:
+            factors.append("Elevated Blood Sugar (>=180 mg/dL)")
+        elif latest.blood_sugar <= 70:
             score += 20
-            factors.append("Hypoglycemia (Low Blood Sugar <70 mg/dL)")
+            factors.append("Hypoglycemia (Low Blood Sugar <=70 mg/dL)")
             
     # Heart Rate
     if latest.heart_rate:
-        if latest.heart_rate > 120:
+        if latest.heart_rate >= 120:
             score += 15
-            factors.append("Tachycardia (High Heart Rate >120 bpm)")
-        elif latest.heart_rate < 50:
+            factors.append("Tachycardia (High Heart Rate >=120 bpm)")
+        elif latest.heart_rate <= 50:
             score += 10
-            factors.append("Bradycardia (Low Heart Rate <50 bpm)")
+            factors.append("Bradycardia (Low Heart Rate <=50 bpm)")
             
     # SpO2
     if latest.spo2:
-        if latest.spo2 < 90:
+        if latest.spo2 <= 90:
             score += 30
-            factors.append("Hypoxemia (Dangerously Low SpO2 <90%)")
-        elif latest.spo2 < 95:
+            factors.append("Hypoxemia (Dangerously Low SpO2 <=90%)")
+        elif latest.spo2 <= 95:
             score += 10
-            factors.append("Low Oxygen Saturation (<95%)")
+            factors.append("Low Oxygen Saturation (<=95%)")
             
     # Body Temperature
     if latest.body_temperature:
-        if latest.body_temperature > 39.0:
+        if latest.body_temperature >= 39.0:
             score += 15
-            factors.append("High Fever (>39.0°C)")
-        elif latest.body_temperature < 35.0:
+            factors.append("High Fever (>=39.0 C)")
+        elif latest.body_temperature <= 35.0:
             score += 15
-            factors.append("Hypothermia (<35.0°C)")
+            factors.append("Hypothermia (<=35.0 C)")
             
     # Cap score at 100
     score = min(score, 100)
     
+    has_critical = any("Critical" in f or "Danger" in f for f in factors)
+    
     # Classification
-    if score >= 60:
+    if score >= 60 or has_critical:
         classification = "Critical"
     elif score >= 40:
         classification = "High"

@@ -509,36 +509,15 @@ def run_assessment(
         len(symptoms),
     )
 
+    prompt = f"{system_message}\n\n{user_message}\n\nJSON:"
     try:
-        response = model.chat(
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_message,
-                },
-                {
-                    "role": "user",
-                    "content": user_message,
-                },
-            ],
+        raw_text = model.generate_text(
+            prompt=prompt,
             params={
-                "max_tokens": 700,
+                "max_new_tokens": 700,
                 "temperature": 0.1,
             },
         )
-
-        raw_text = response["choices"][0]["message"]["content"]
-
-    except (KeyError, IndexError, TypeError, AttributeError) as exc:
-        logger.error(
-            "Unexpected watsonx.ai chat response structure: %r",
-            response if "response" in locals() else None,
-        )
-
-        raise GraniteResponseError(
-            "watsonx.ai returned an unexpected assessment response structure."
-        ) from exc
-
     except Exception:
         logger.error(
             "watsonx.ai symptom assessment failed",
@@ -627,25 +606,15 @@ def generate_report_narration(snapshot: dict) -> str:
 
     logger.info("Generating report narration using watsonx.ai chat API")
 
+    prompt = f"{system_message}\n\n{user_message}\n\nAnswer:"
     try:
-        response = model.chat(
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_message,
-                },
-                {
-                    "role": "user",
-                    "content": user_message,
-                },
-            ],
+        text = model.generate_text(
+            prompt=prompt,
             params={
-                "max_tokens": 300,
+                "max_new_tokens": 300,
                 "temperature": 0.2,
             },
         )
-
-        text = response["choices"][0]["message"]["content"]
 
         if not text or not text.strip():
             raise GraniteResponseError(
@@ -717,21 +686,19 @@ def generate_rag_answer(query: str, context: str) -> str:
 
     user_message = f"Context:\n{context}\n\nQuery/Topic: {query}"
 
-    logger.info("Generating RAG answer using watsonx.ai chat API")
+    # Combine system message and user message into a single plain-text prompt for the base model
+    prompt = f"{system_message}\n\n{user_message}\n\nAnswer:"
+
+    logger.info("Generating RAG answer using watsonx.ai generate_text API")
 
     try:
-        response = model.chat(
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_message},
-            ],
+        text = model.generate_text(
+            prompt=prompt,
             params={
-                "max_tokens": 500,
+                "max_new_tokens": 500,
                 "temperature": 0.1,
             },
         )
-
-        text = response["choices"][0]["message"]["content"]
         if not text or not text.strip():
             return "I cannot determine a diagnosis from symptoms alone. Chest pain and difficulty breathing can be potentially serious symptoms. Please seek urgent medical evaluation or emergency care. A qualified healthcare professional must assess the cause and provide appropriate treatment."
 

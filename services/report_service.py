@@ -79,14 +79,14 @@ def generate_report_snapshot(user_id: int) -> dict:
     rag_refs = []
     if risk.get("factors"):
         query = risk["factors"][0]
-        results = retrieve(query, top_k=2)
-        if results:
-            rag_refs = [{"title": r["title"], "source": r["source"], "text": r["text"][:150] + "..."} for r in results]
+        results_list, mode = retrieve(query, top_k=2)
+        if results_list:
+            rag_refs = [{"title": r["title"], "source": r["source"], "text": r["text"][:150] + "..."} for r in results_list]
     elif profile and profile.conditions_list:
         query = profile.conditions_list[0]
-        results = retrieve(query, top_k=2)
-        if results:
-            rag_refs = [{"title": r["title"], "source": r["source"], "text": r["text"][:150] + "..."} for r in results]
+        results_list, mode = retrieve(query, top_k=2)
+        if results_list:
+            rag_refs = [{"title": r["title"], "source": r["source"], "text": r["text"][:150] + "..."} for r in results_list]
             
     snapshot = {
         "profile": profile_data,
@@ -106,10 +106,13 @@ def generate_report_snapshot(user_id: int) -> dict:
     # Add Granite Narration Layer
     try:
         from services.granite_service import generate_report_narration
-        snapshot["ai_narration"] = generate_report_narration(snapshot)
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(generate_report_narration, snapshot)
+            snapshot["ai_narration"] = future.result(timeout=10)
     except Exception as e:
-        current_app.logger.error("Granite narration failed.")
-        snapshot["ai_narration"] = "AI narration is currently unavailable. Please review the deterministic report below."
+        current_app.logger.error("Granite narration failed or timed out.")
+        snapshot["ai_narration"] = ""
         
 
     

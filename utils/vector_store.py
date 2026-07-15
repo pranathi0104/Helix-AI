@@ -7,6 +7,10 @@ import math
 from collections import Counter
 import re
 
+def normalize_text(text: str) -> str:
+    # replace hyphens with space, then lowercase and remove non-alphanumeric
+    return re.sub(r'[^a-z0-9 ]', '', text.lower().replace('-', ' ')).strip()
+
 # ---------------------------------------------------------------------------
 # Embedding Abstractions
 # ---------------------------------------------------------------------------
@@ -165,7 +169,7 @@ class InMemoryVectorStore(VectorStoreBase):
                 return 0.0
             return dot / (norm1 * norm2)
 
-    def semantic_search(self, query: str, top_k: int = 5) -> list:
+    def semantic_search(self, query: str, top_k: int = 5, strict_topic_filtering: bool = False) -> list:
         """
         Returns a list of retrieved chunks sorted by relevance score.
         Each chunk is enhanced with a 'relevance_score' field.
@@ -173,10 +177,30 @@ class InMemoryVectorStore(VectorStoreBase):
         if not self.chunks:
             return []
             
+        chunks_to_search = self.chunks
+        if strict_topic_filtering:
+            norm_query = normalize_text(query)
+            unique_titles = list(set([chunk['title'] for chunk in self.chunks]))
+            
+            matched_titles = []
+            for title in unique_titles:
+                norm_title = normalize_text(title)
+                if re.search(r'\b' + re.escape(norm_title) + r'\b', norm_query):
+                    matched_titles.append(title)
+                    
+            if not matched_titles:
+                return []
+                
+            chunks_to_search = [c for c in self.chunks if c['title'] in matched_titles]
+            
         query_vec = self.embedder.embed(query)
         
         results = []
-        for chunk, doc_vec in zip(self.chunks, self.embeddings):
+        for chunk in chunks_to_search:
+            # find original index to get embedding
+            idx = self.chunks.index(chunk)
+            doc_vec = self.embeddings[idx]
+            
             score = self._cosine_similarity(query_vec, doc_vec)
             
             # Copy chunk and add score

@@ -70,6 +70,151 @@
             No relevant passages found for your query. Try different keywords.
           </div>
         {% endif %}
+      {% else %}
+        <style>
+          .hover-elevate {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
+          .hover-elevate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+          }
+          .hover-primary:hover {
+            background-color: var(--bs-primary);
+            color: white !important;
+            border-color: var(--bs-primary);
+          }
+        </style>
+        
+        <script>
+        function submitKnowledgeSearch(topic) {
+            const input = document.querySelector('input[name="q"]');
+            if (!input || !input.form) return;
+            
+            input.value = topic;
+            if (input.form.requestSubmit) {
+                input.form.requestSubmit();
+            } else {
+                input.form.submit();
+            }
+        }
+        </script>
+
+        <!-- Banner -->
+        <div class="alert alert-primary shadow-sm border-0 d-flex align-items-center mb-4">
+          <i class="bi bi-robot fs-3 me-3 text-primary"></i>
+          <div>
+            <h5 class="alert-heading mb-1 fw-bold">AI-Powered Medical Knowledge Search</h5>
+            <p class="mb-0">Helix AI retrieves relevant information from its curated medical knowledge base and generates grounded educational answers.</p>
+          </div>
+        </div>
+
+        <!-- Try asking Helix AI -->
+        <div class="mb-4">
+          <h6 class="text-muted fw-bold mb-3 text-uppercase small">Try asking Helix AI</h6>
+          <div class="d-flex flex-wrap gap-2">
+            <a href="#" onclick="submitKnowledgeSearch('What is hypertension?'); return false;" class="btn btn-outline-secondary rounded-pill btn-sm shadow-sm hover-primary">What is hypertension?</a>
+            <a href="#" onclick="submitKnowledgeSearch('What are common symptoms of COVID-19?'); return false;" class="btn btn-outline-secondary rounded-pill btn-sm shadow-sm hover-primary">What are common symptoms of COVID-19?</a>
+            <a href="#" onclick="submitKnowledgeSearch('headache migraine'); return false;" class="btn btn-outline-secondary rounded-pill btn-sm shadow-sm hover-primary">What causes migraines?</a>
+            <a href="#" onclick="submitKnowledgeSearch('hypertension high blood pressure'); return false;" class="btn btn-outline-secondary rounded-pill btn-sm shadow-sm hover-primary">Explain high blood pressure</a>
+            <a href="#" onclick="submitKnowledgeSearch('What is asthma?'); return false;" class="btn btn-outline-secondary rounded-pill btn-sm shadow-sm hover-primary">What is asthma?</a>
+            <a href="#" onclick="submitKnowledgeSearch('What are common signs of dehydration?'); return false;" class="btn btn-outline-secondary rounded-pill btn-sm shadow-sm hover-primary">What are common signs of dehydration?</a>
+          </div>
+        </div>
+
+        <!-- Popular Health Topics -->
+        <div class="mb-4">
+          <h6 class="text-muted fw-bold mb-3 text-uppercase small">Popular Health Topics</h6>
+          <div class="row g-3">
+            <div class="col-md-4 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('Heart disease and cardiovascular health'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-light">
+                <div class="card-body text-center p-3">
+                  <i class="bi bi-heart-pulse text-danger fs-2 mb-2"></i>
+                  <h6 class="card-title mb-0 fw-bold text-dark">Heart Health</h6>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('Diabetes'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-light">
+                <div class="card-body text-center p-3">
+                  <i class="bi bi-droplet-half text-primary fs-2 mb-2"></i>
+                  <h6 class="card-title mb-0 fw-bold text-dark">Diabetes</h6>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('Asthma and respiratory health'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-light">
+                <div class="card-body text-center p-3">
+                  <i class="bi bi-lungs text-info fs-2 mb-2"></i>
+                  <h6 class="card-title mb-0 fw-bold text-dark">Respiratory Health</h6>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('Stroke and neurological health'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-light">
+                <div class="card-body text-center p-3">
+                  <i class="bi bi-diagram-3 fs-2 mb-2" style="color: #6f42c1;"></i>
+                  <h6 class="card-title mb-0 fw-bold text-dark">Neurological Health</h6>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('Dehydration, nutrition and obesity'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-light">
+                <div class="card-body text-center p-3">
+                  <i class="bi bi-apple text-success fs-2 mb-2"></i>
+                  <h6 class="card-title mb-0 fw-bold text-dark">Nutrition & Wellness</h6>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('Cancer treatment options'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-light">
+                <div class="card-body text-center p-3">
+                  <i class="bi bi-prescription2 text-warning fs-2 mb-2"></i>
+                  <h6 class="card-title mb-0 fw-bold text-dark">Treatment Information</h6>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Explore Health Topics -->
+        <div class="mb-2">
+          <h6 class="text-muted fw-bold mb-3 text-uppercase small">Explore Health Topics</h6>
+          <div class="row g-3">
+            <div class="col-md-3 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('Common medical conditions like diabetes, asthma and fever'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-white border-start border-primary border-4">
+                <div class="card-body p-3">
+                  <h6 class="card-title mb-1 fw-bold text-dark">Understand Medical Conditions</h6>
+                  <small class="text-muted">Learn about causes and symptoms.</small>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('diabetes treatment'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-white border-start border-success border-4">
+                <div class="card-body p-3">
+                  <h6 class="card-title mb-1 fw-bold text-dark">Treatment & Care</h6>
+                  <small class="text-muted">Explore medical therapies.</small>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('Healthy lifestyle to prevent heart disease'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-white border-start border-info border-4">
+                <div class="card-body p-3">
+                  <h6 class="card-title mb-1 fw-bold text-dark">Healthy Living</h6>
+                  <small class="text-muted">Guidance for a healthy life.</small>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <a href="#" onclick="submitKnowledgeSearch('Warning signs and emergency symptoms of stroke and heart disease'); return false;" class="card text-decoration-none shadow-sm hover-elevate h-100 border-0 bg-white border-start border-danger border-4">
+                <div class="card-body p-3">
+                  <h6 class="card-title mb-1 fw-bold text-dark">Know the Warning Signs</h6>
+                  <small class="text-muted">Identify severe red flags.</small>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
       {% endif %}
     </div>
   </div>

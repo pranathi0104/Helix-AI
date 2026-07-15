@@ -43,12 +43,19 @@ def require_api_key(f):
 @require_api_key
 def api_get_patient_vitals(user_id):
     """Retrieve the latest clinical vitals for a specific patient."""
+    import os
+    pid = os.getpid()
+    req_path = request.path
+    
+    current_app.logger.warning(f"--- ORCHESTRATE API HIT --- PID: {pid} | Path: {req_path} | User ID: {user_id}")
     try:
         record = get_latest_vitals(user_id)
         if not record:
-            return jsonify({"error": "No vitals found for this patient."}), 404
+            current_app.logger.warning(f"--- ORCHESTRATE API RESPONSE --- PID: {pid} | Status: 200 | Reason: No vitals found")
+            return jsonify({"message": "No vitals found for this patient."}), 200
             
         classified = classify_vitals(record)
+        current_app.logger.warning(f"--- ORCHESTRATE API RESPONSE --- PID: {pid} | Status: 200 | Reason: Vitals found")
         return jsonify({
             "date": record.date_time.isoformat() if record.date_time else None,
             "systolic_bp": record.systolic_bp,
@@ -111,7 +118,7 @@ def api_get_treatment_information(user_id):
                 "name": m.name,
                 "dosage": m.dosage,
                 "frequency": m.frequency,
-                "instructions": m.instructions,
+                "instructions": m.notes,
                 "is_active": m.is_active,
                 "start_date": m.start_date.isoformat() if m.start_date else None,
                 "end_date": m.end_date.isoformat() if m.end_date else None

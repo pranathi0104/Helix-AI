@@ -74,8 +74,11 @@ def chat_message():
     
     is_diagnosis_request = False
     is_severe = False
+    
+    # Send ONLY the original user_message to Orchestrate for normal messages
     orchestrate_message = user_message
 
+    # Keep the existing explicit diagnosis safety intercept unchanged
     if any(trigger in user_message_lower for trigger in diagnosis_triggers):
         is_diagnosis_request = True
         severe_symptoms = [
@@ -95,6 +98,7 @@ def chat_message():
         if any(symptom in user_message_lower for symptom in severe_symptoms):
             is_severe = True
             
+        # Inject clinical persona/symptom instruction ONLY into the diagnosis request path
         orchestrate_message = f"Answer the user's symptom concern directly. Name relevant possible causes and conditions using uncertainty language. Provide concise safe guidance, identify warning signs, and recommend appropriate medical evaluation. Never claim a definitive diagnosis.\n\nUser concern: {user_message}"
         if is_severe:
             orchestrate_message += "\n\nSYSTEM NOTE: Severe symptom detected. Enforce emergency protocol: prioritize immediate emergency action, advise assisted transport or emergency services, and do not ask follow-up questions."
@@ -125,7 +129,7 @@ def chat_message():
             "agent_id": SUPERVISOR_AGENT_ID,
             "context": {
                 # Security constraint: Force patient_user_id to current authenticated user
-                "patient_user_id": current_user.id
+                "patient_user_id": str(current_user.id)
             }
         }
         
@@ -146,6 +150,11 @@ def chat_message():
             
         # 1. Create Run
         run_endpoint = f"{orchestrate_url}/v1/orchestrate/runs"
+        if thread_id:
+            payload["thread_id"] = thread_id
+            
+        current_app.logger.warning(f"ORCHESTRATE PAYLOAD: {payload}")
+        
         create_res = requests.post(run_endpoint, headers=headers, json=payload, timeout=10)
         create_res.raise_for_status()
         
@@ -190,6 +199,7 @@ def chat_message():
         msg_res.raise_for_status()
         
         messages_json = msg_res.json()
+        current_app.logger.warning(f"RAW ORCHESTRATE RESPONSE: {messages_json}")
         messages_array = messages_json.get("data", []) if isinstance(messages_json, dict) and "data" in messages_json else messages_json
         
         final_message_text = "I'm sorry, I could not generate a response."

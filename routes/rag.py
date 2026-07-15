@@ -28,9 +28,12 @@ def index():
     
     import re
     if query:
-        raw_results = retrieve(query, top_k=5)
-        # Apply a threshold to avoid weak unrelated results
-        results = [r for r in raw_results if r.get('relevance_score', 0) >= 0.65]
+        raw_results, mode = retrieve(query, top_k=5)
+        # Apply threshold only for semantic mode; fallback relies on strict topic filtering
+        if mode == "semantic":
+            results = [r for r in raw_results if r.get('relevance_score', 0) >= 0.65]
+        else:
+            results = raw_results
         
         if results:
             context = format_context(results)
@@ -38,7 +41,33 @@ def index():
                 answer = generate_rag_answer(query, context)
             except Exception as e:
                 logger.error("Granite generation failed: %s", e)
-                error = "We're currently experiencing issues generating an AI summary. Please review the relevant sources below."
+                answer_parts = []
+                
+                # Extract first sentence as explanation from the top chunk
+                top_chunk = results[0]
+                text = top_chunk.get("text", "")
+                title = top_chunk.get("title", "this topic")
+                
+                first_sentence = text.split(". ")[0].strip()
+                if first_sentence:
+                    answer_parts.append(f"Regarding {title}: {first_sentence}.")
+                else:
+                    answer_parts.append(f"Educational information regarding {title} has been retrieved.")
+                
+                has_symptoms = any("symptom" in r.get("text", "").lower() or "sign" in r.get("text", "").lower() for r in results)
+                has_risks = any("risk" in r.get("text", "").lower() or "complication" in r.get("text", "").lower() for r in results)
+                has_care = any("treatment" in r.get("text", "").lower() or "care" in r.get("text", "").lower() or "prevent" in r.get("text", "").lower() for r in results)
+                
+                if has_symptoms:
+                    answer_parts.append("The retrieved documents describe specific symptoms and signs to monitor.")
+                if has_risks:
+                    answer_parts.append("They also outline potential risks, complications, or emergency indicators.")
+                if has_care:
+                    answer_parts.append("Guidance on prevention, home care, or medical treatment is provided.")
+                    
+                answer_parts.append("Please review the complete excerpts below for detailed clinical information. Always consult a qualified healthcare professional for an accurate diagnosis.")
+                
+                answer = " ".join(answer_parts)
         else:
             answer = "This topic is not currently covered by the Helix Knowledge Base."
             
@@ -59,5 +88,5 @@ def api_search():
     if not query:
         return jsonify({"results": []})
         
-    results = retrieve(query, top_k=5)
+    results, mode = retrieve(query, top_k=5)
     return jsonify({"results": results})
