@@ -1,0 +1,32 @@
+{
+  "name": "Helix AI",
+  "description": "Agentic AI healthcare companion for chronic disease monitoring and personalized health guidance.",
+  "project_type": "IBM SkillsBuild Project",
+  "architecture": "Multi-agent AI healthcare system",
+  "backend": "Python Flask",
+  "ai_services": [
+    "IBM watsonx.ai",
+    "IBM Granite",
+    "IBM watsonx Orchestrate"
+  ],
+  "agents": [
+    "Supervisor Agent",
+    "Clinical Assessment Agent",
+    "Chronic Monitoring Agent",
+    "Lifestyle Agent",
+    "Treatment Agent",
+    "Health Report Agent"
+  ],
+  "features": [
+    "AI clinical assessment",
+    "Chronic disease monitoring",
+    "Deterministic risk analysis",
+    "Personalized lifestyle recommendations",
+    "Treatment and medication support",
+    "RAG medical knowledge base",
+    "AI health reports"
+  ],
+  "deployment": "Render",
+  "repository": "https://github.com/pranathi0104/Helix-AI",
+  "medical_disclaimer": "Helix AI is an educational project and does not diagnose diseases or replace qualified healthcare professionals."
+}
